@@ -1,0 +1,17 @@
+# Auto-start tmux on every plain ghostty launch.
+# wsg overrides this via its own --command, so workspaces still work.
+command = direct:/Users/alex/.scripts/start-tmux.sh
+fullscreen = true
+macos-titlebar-proxy-icon = visible
+
+font-family = "MesloLGL Nerd Font Mono"
+font-size = 12.5
+
+# Dim + tint inactive splits so the focused one stands out.
+window-padding-x = 6
+window-padding-y = 4
+
+unfocused-split-opacity = 0.7
+unfocused-split-fill = "#000000"
+split-divider-color = "#5EC4FF"
+

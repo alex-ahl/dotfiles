@@ -1,0 +1,11 @@
+default_profile = "docker"
+[profiles.docker]
+adapter = "postgres"
+theme = "harlequin"
+limit = 100000
+keymap_name = ["vscode"]
+host = "localhost"
+port = "9000"
+user = "postgres"
+password = "postgres"
+database = "postgres"

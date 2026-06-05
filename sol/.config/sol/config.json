@@ -1,0 +1,83 @@
+{
+  "emoji": {
+    "frequentlyUsedEmojis": {}
+  },
+  "calendar": {
+    "selectedCalendarIds": [
+      "14A6470D-4520-4ED1-96A9-C8C1F6629B9B",
+      "52BD2EAF-3734-42C4-A0AC-1BE1FE7FA35C",
+      "3F5F0E46-28CD-4E9A-815C-96BB116BFFB0",
+      "1F7880D5-2726-485E-A27F-9E13BA0E8F63",
+      "EAAD93E5-4989-4B26-A7B3-29D80B0B7867",
+      "AE189794-7C97-40C7-B3CD-7F4B87E9DC81",
+      "E27D9C22-4A93-4544-8340-6CF76D089642"
+    ],
+    "hasInitializedSelection": true
+  },
+  "clipboard": {
+    "saveHistory": false
+  },
+  "frequencies": {
+    "CameraController": 3,
+    "Amphetamine": 5,
+    "WhatsApp": 1,
+    "Kill process": 1,
+    "Discord": 2,
+    "DBeaver": 1
+  },
+  "history": [
+    "camera",
+    "am",
+    "whats",
+    "amp",
+    "a",
+    "amp",
+    "kill",
+    "amp",
+    "camera",
+    "discord",
+    "discord",
+    "dbea",
+    "camera"
+  ],
+  "note": "",
+  "onboardingStep": "v1_completed",
+  "firstTranslationLanguage": "en",
+  "secondTranslationLanguage": "sv",
+  "thirdTranslationLanguage": null,
+  "globalShortcut": "command",
+  "showWindowOn": "screenWithFrontmost",
+  "calendarEnabled": true,
+  "showAllDayEvents": true,
+  "launchAtLogin": true,
+  "mediaKeyForwardingEnabled": true,
+  "showUpcomingEvent": true,
+  "scratchPadColor": "SYSTEM",
+  "searchFolders": [
+    "/Users/alex/"
+  ],
+  "searchEngine": "google",
+  "customSearchUrl": "https://google.com/search?q=%s",
+  "shortcuts": {
+    "resize_fullscreen": "control+option+return",
+    "lock": "command+option+q",
+    "resize_right_half": "control+option+right",
+    "resize_left_half": "control+option+left",
+    "resize_top_half": "control+option+up",
+    "resize_bottom_half": "control+option+down",
+    "resize_top_left": "control+option+u",
+    "resize_top_right": "control+option+i",
+    "resize_bottom_left": "control+option+j",
+    "resize_bottom_right": "control+option+k",
+    "move_next_screen": "control+option+command+right",
+    "move_previous_screen": "control+option+command+left",
+    "scratchpad": "command+shift+space",
+    "emoji_picker": "command+control+space",
+    "clipboard_manager": "command+option+v"
+  },
+  "showInAppBrowserBookMarks": true,
+  "hasDismissedGettingStarted": true,
+  "hyperKeyEnabled": false,
+  "customItems": [],
+  "disabledItemIds": []
+}

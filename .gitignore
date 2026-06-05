@@ -1,0 +1,29 @@
+# --- secrets / credentials (never commit) ---
+**/.npmrc
+**/auth.json
+**/.credentials.json
+**/.claude.json
+
+# --- sol: track only config.json, ignore binary runtime state ---
+sol/.config/sol/mmkv.*
+sol/.config/sol/images_pasteboard/
+
+# --- .claude: track only settings.json, commands/, agents/ ---
+# (we only copy those in, but guard against accidental state staging)
+claude/**/projects/
+claude/**/sessions/
+claude/**/cache/
+claude/**/history.jsonl
+claude/**/shell-snapshots/
+claude/**/file-history/
+claude/**/todos/
+claude/**/backups/
+claude/**/mcp-needs-auth-cache.json
+
+# --- docker: only config.json + daemon.json are tracked ---
+docker/.docker/.token_seed
+docker/.docker/contexts/
+
+# --- misc ---
+node_modules/
+.DS_Store

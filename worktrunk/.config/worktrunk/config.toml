@@ -1,0 +1,11 @@
+worktree-path = "{{ repo_path }}/../{{ branch | sanitize }}"
+
+post-start = "wt step copy-ignored"
+post-remove = "git fetch -p"
+
+# Land in a wsg tmux session named after the worktree (no-op outside tmux).
+post-switch = '~/git/scripts/ghostty/wt-session.sh "{{ worktree_path }}"'
+
+# tmux-only workflow: the post-switch hook owns navigation, so don't cd.
+[switch]
+cd = false
