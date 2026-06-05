@@ -66,7 +66,27 @@ Remove anything not in the Brewfile: `brew bundle cleanup --file=~/git/dotfiles/
 
 `clone-bare.sh`, `check-worktrees.sh`, and the ghostty/tmux workspace helpers
 (`start-tmux.sh`, `workspace.sh`, `wt-session.sh`, `kill-session.sh`, `git-status.sh`).
-Aliases `wsg`, `cb`, `cwt` (in `.zshrc`) point here.
+Aliases `wsg`, `cb`, `cwt`, `wtp` (in `.zshrc`) point here.
+
+`wt-prune.sh` (`wtp`) — sweep all wsg sessions and clean up finished ones: a
+branch with a merged PR (`gh`) or a gone upstream gets its worktree removed +
+session killed; a regular (non-worktree) repo is switched back to the default
+branch with the merged branch deleted, then the session killed. Skips the
+default branch, dirty worktrees, and your current session. Dry-run + confirm
+(`-y` to skip the prompt).
+
+`wt-rehome.sh` — start a fresh worktree + wsg session from the current one,
+carrying your in-progress work. Bound to `prefix + M` (prompts for the new
+name). Behaviour depends on the current branch's PR state (`gh pr view`):
+- **merged** → new worktree off the latest default branch; changes **move** to
+  it; the old worktree + session are **torn down**.
+- **not merged** (after `y/N` confirm) → new worktree off the **current HEAD**
+  (carries the commits); changes are **copied**; the old worktree + session are
+  **kept** intact.
+
+Gitignored files (`.env`, caches) are copied across in both modes. Aborts
+non-destructively if the default branch can't be fast-forwarded (merged path)
+or the stash-pop conflicts.
 
 ## Not tracked (set up manually, contain secrets/state)
 
