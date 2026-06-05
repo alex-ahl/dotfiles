@@ -117,6 +117,7 @@ alias wsg-ls='tmux -L wsg ls -F "#S"'
 alias wsg-pick='tmux -L wsg attach -t "$(tmux -L wsg ls -F "#S" | fzf)"'
 alias cb=~/.scripts/clone-bare.sh
 alias cwt=~/.scripts/check-worktrees.sh
+alias wtp=~/.scripts/wt-prune.sh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
