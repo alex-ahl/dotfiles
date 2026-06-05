@@ -59,6 +59,18 @@ SKIPS=()
 
 while IFS='|' read -r sess spath; do
   [ -z "$sess" ] && continue
+
+  # Orphan: the session's directory no longer exists (worktree already removed
+  # out from under it). Plan to just kill the dead session.
+  if [ ! -e "$spath" ]; then
+    if [ -n "$CUR" ] && [ "$sess" = "$CUR" ]; then
+      SKIPS+=("$sess: directory gone but it's your current session — skipped")
+    else
+      P_SESS+=("$sess"); P_PATH+=("$spath"); P_BRANCH+=("-"); P_DEF+=("-"); P_KIND+=("orphan"); P_REASON+=("dir gone"); P_CTX+=("")
+    fi
+    continue
+  fi
+
   git -C "$spath" rev-parse --is-inside-work-tree >/dev/null 2>&1 || continue   # not a repo (e.g. 'home')
   branch="$(git -C "$spath" symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
   [ -z "$branch" ] && continue                                                  # detached (e.g. review)
@@ -133,6 +145,7 @@ P_PAIRS=()
 if [ "$HANDOFF" = 1 ]; then
   echo "saving Claude context (/handoff)... (approving prompts; this can take a bit)"
   for i in $(seq 0 $((n - 1))); do
+    [ "${P_KIND[$i]}" = "orphan" ] && { P_PAIRS[$i]=""; continue; }   # dead dir — nothing to save
     P_PAIRS[$i]="$(~/.scripts/handoff-session.sh fire "${P_SESS[$i]}" 2>/dev/null | tr '\n' ' ')"
   done
   # Phase 2 — approve prompts + wait once for all handoff files to settle.
@@ -152,7 +165,9 @@ for i in $(seq 0 $((n - 1))); do
       continue
     fi
   fi
-  if [ "$kind" = "worktree" ]; then
+  if [ "$kind" = "orphan" ]; then
+    echo "killing orphan session '$sess' (directory already gone)..."
+  elif [ "$kind" = "worktree" ]; then
     echo "removing worktree '$branch' + session '$sess'..."
     wt -C "$ctx" remove "$branch" -f -y >/dev/null 2>&1 || echo "  warn: 'wt remove $branch' failed" >&2
   else
