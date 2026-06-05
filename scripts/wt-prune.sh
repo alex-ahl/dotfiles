@@ -19,11 +19,14 @@
 set -Eeuo pipefail
 
 YES=0
-case "${1:-}" in
-  -y | --yes) YES=1 ;;
-  "") ;;
-  *) echo "usage: wt-prune [-y]" >&2; exit 1 ;;
-esac
+HANDOFF=1
+for arg in "$@"; do
+  case "$arg" in
+    -y | --yes) YES=1 ;;
+    --no-handoff) HANDOFF=0 ;;
+    *) echo "usage: wt-prune [-y] [--no-handoff]" >&2; exit 1 ;;
+  esac
+done
 
 command -v tmux >/dev/null || { echo "tmux not found" >&2; exit 1; }
 tmux -L wsg list-sessions >/dev/null 2>&1 || { echo "no wsg tmux server running — nothing to do."; exit 0; }
@@ -114,6 +117,10 @@ echo "Will prune $n session(s):"
   done
 } | column -t -s "$(printf '\t')"
 echo
+[ "$HANDOFF" = 1 ] \
+  && echo "Each session's Claude context is saved via /handoff before it's killed (--no-handoff to skip)." \
+  || echo "(--no-handoff: Claude context will NOT be saved)"
+echo
 
 if [ "$YES" != 1 ]; then
   printf "Proceed? [y/N] "
@@ -121,9 +128,30 @@ if [ "$YES" != 1 ]; then
   case "$ans" in [yY] | [yY][eE][sS]) ;; *) echo "aborted."; exit 1 ;; esac
 fi
 
+# Phase 1 — fire /handoff in every planned session's Claude panes (parallel).
+P_PAIRS=()
+if [ "$HANDOFF" = 1 ]; then
+  echo "saving Claude context (/handoff)... (approving prompts; this can take a bit)"
+  for i in $(seq 0 $((n - 1))); do
+    P_PAIRS[$i]="$(~/.scripts/handoff-session.sh fire "${P_SESS[$i]}" 2>/dev/null | tr '\n' ' ')"
+  done
+  # Phase 2 — approve prompts + wait once for all handoff files to settle.
+  # shellcheck disable=SC2086
+  ~/.scripts/handoff-session.sh await 180 ${P_PAIRS[*]:-} >/dev/null 2>&1 || true
+fi
+
+# Phase 3 — act on each session (skip any whose handoff didn't finish).
 for i in $(seq 0 $((n - 1))); do
   sess="${P_SESS[$i]}"; spath="${P_PATH[$i]}"; branch="${P_BRANCH[$i]}"
   def="${P_DEF[$i]}"; kind="${P_KIND[$i]}"; reason="${P_REASON[$i]}"; ctx="${P_CTX[$i]}"
+  pairs="${P_PAIRS[$i]:-}"
+  if [ "$HANDOFF" = 1 ] && [ -n "${pairs// /}" ]; then
+    # shellcheck disable=SC2086
+    if ! ~/.scripts/handoff-session.sh check $pairs; then
+      echo "skip: $sess — Claude /handoff didn't finish in time; left intact" >&2
+      continue
+    fi
+  fi
   if [ "$kind" = "worktree" ]; then
     echo "removing worktree '$branch' + session '$sess'..."
     wt -C "$ctx" remove "$branch" -f -y >/dev/null 2>&1 || echo "  warn: 'wt remove $branch' failed" >&2

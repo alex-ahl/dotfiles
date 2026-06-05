@@ -72,14 +72,29 @@ Aliases `wsg`, `cb`, `cwt`, `wtp` (in `.zshrc`) point here.
 branch with a merged PR (`gh`) or a gone upstream gets its worktree removed +
 session killed; a regular (non-worktree) repo is switched back to the default
 branch with the merged branch deleted, then the session killed. Skips the
-default branch, dirty worktrees, and your current session. Dry-run + confirm
-(`-y` to skip the prompt).
+default branch, dirty worktrees, and your current session. Before killing a
+session, the Claude context in its `ai-1`/`ai-2` panes is saved via `/handoff`
+(see below); a session whose handoff doesn't finish is left intact. Dry-run +
+confirm (`-y` to skip the prompt, `--no-handoff` to skip saving context).
+
+`handoff-session.sh` — saves the Claude context of a wsg session via `/handoff`
+before teardown, covering both instances (`ai-1`=account1, `ai-2`=account2). Used
+by `wt-prune` and `wt-rehome`; files land in `~/handoffs/<session>-<window>.md`,
+restored with `/resume <slug>`. It only triggers `/handoff` and waits — it never
+injects approvals into a live Claude. For it to run unattended, `/handoff`'s
+steps are allow-listed in the `claude` package's `settings.json`
+(`permissions.allow`: `git status/log/rev-parse`, `ls`, `pwd`, `echo`, and
+`Edit(//…/handoffs/**)` for the file write; the rewritten `~/handoffs/commands/handoff.md`
+gathers context with expansion-free commands so nothing trips a prompt). This only
+affects Claude sessions **started after** those settings are in place; if a running
+Claude still prompts, its handoff won't finish and that session is left intact.
 
 `wt-rehome.sh` — start a fresh worktree + wsg session from the current one,
 carrying your in-progress work. Bound to `prefix + M` (prompts for the new
 name). Behaviour depends on the current branch's PR state (`gh pr view`):
 - **merged** → new worktree off the latest default branch; changes **move** to
-  it; the old worktree + session are **torn down**.
+  it; the old worktree + session are **torn down** (the old session's Claude
+  context is saved via `/handoff` first — if that fails, the old is kept).
 - **not merged** (after `y/N` confirm) → new worktree off the **current HEAD**
   (carries the commits); changes are **copied**; the old worktree + session are
   **kept** intact.
