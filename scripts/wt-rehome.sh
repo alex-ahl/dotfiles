@@ -99,10 +99,21 @@ if [ "$MERGED" = 1 ]; then
     exit 1
   fi
 
-  echo "removing old worktree '$OLD_BRANCH'..."
-  wt -C "$NEW_PATH" remove "$OLD_BRANCH" -f -y
+  # Save the old session's Claude context (/handoff) before tearing it down.
+  # If it can't be saved, keep the old worktree + session as-is.
   OLD_SESS="$(tmux -L wsg list-sessions -F '#{session_name}|#{session_path}' 2>/dev/null \
     | awk -F'|' -v p="$OLD_PATH" '$2==p {print $1; exit}')"
+  if [ -n "$OLD_SESS" ]; then
+    echo "saving Claude context for '$OLD_SESS' (/handoff)..."
+    if ! ~/.scripts/handoff-session.sh run "$OLD_SESS"; then
+      echo "warning: /handoff didn't finish for '$OLD_SESS' — keeping the old worktree + session intact." >&2
+      echo "done — created '$NEW' off latest $DEFAULT; old '$OLD_BRANCH' kept (context not saved)."
+      exit 0
+    fi
+  fi
+
+  echo "removing old worktree '$OLD_BRANCH'..."
+  wt -C "$NEW_PATH" remove "$OLD_BRANCH" -f -y
   [ -n "$OLD_SESS" ] && tmux -L wsg kill-session -t "$OLD_SESS" 2>/dev/null || true
   echo "done — rehomed '$OLD_BRANCH' -> '$NEW' (off latest $DEFAULT); old worktree removed."
 else
