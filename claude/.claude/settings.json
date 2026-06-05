@@ -1,0 +1,13 @@
+{
+  "model": "opus[1m]",
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"/Users/alex/.claude-account1/plugins/cache/caveman/caveman/600e8efcd6ac/hooks/caveman-statusline.sh\""
+  },
+  "enabledPlugins": {
+    "feature-dev@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true
+  },
+  "theme": "dark-ansi"
+}
