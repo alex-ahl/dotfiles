@@ -73,20 +73,20 @@ do_stash() { [ "$STASHED" = 1 ] && git -C "$OLD_PATH" stash push -u -m "wt-rehom
 OLD_SESS="$(tmux -L wsg list-sessions -F '#{session_name}|#{session_path}' 2>/dev/null \
   | awk -F'|' -v p="$OLD_PATH" '$2==p {print $1; exit}')"
 
-# Carry the old session's Claude context into the new one? Ask up front (default
+# Carry the old session's agent context into the new one? Ask up front (default
 # yes) when there's a session to save and we're on a TTY; non-interactive runs
 # default to carrying.
 HANDOFF=1
 if [ -n "$OLD_SESS" ] && [ -t 0 ]; then
-  printf "Carry Claude context to '%s'? [Y/n] " "$NEW"
+  printf "Carry agent context to '%s'? [Y/n] " "$NEW"
   IFS= read -r _hc
   case "$_hc" in [nN]*) HANDOFF=0 ;; esac
 fi
 
-# Save the old session's Claude context via /handoff and echo resume args
+# Save the old session's agent context via /handoff and echo resume args
 # ("<window>=<slug>"...) for wt-session.sh, so the new session's ai windows boot
 # resumed. Returns non-zero if a fired handoff never settled in time (the caller
-# decides whether that's fatal). Echoes nothing when there are no Claude panes.
+# decides whether that's fatal). Echoes nothing when there are no agent panes.
 save_context_map() {  # $1 = old session name
   local sess="$1" lines pairs wname pid slug args=""
   lines="$(~/.scripts/handoff-session.sh fire "$sess" 2>/dev/null)"
@@ -121,12 +121,12 @@ if [ "$MERGED" = 1 ]; then
   cd "$NEW_PATH"   # old worktree dir is removed below; keep a valid cwd
   wt -C "$NEW_PATH" step copy-ignored --from "$OLD_BRANCH" --to "$NEW" --force >/dev/null 2>&1 || true
 
-  # Save the old session's Claude context BEFORE bringing up the new session, so
+  # Save the old session's agent context BEFORE bringing up the new session, so
   # its ai windows can resume it. If the handoff can't be saved we keep the old
   # worktree + session intact and bring the new one up cold (below).
   RESUME_ARGS=""; SAVE_OK=1
   if [ "$HANDOFF" = 1 ] && [ -n "$OLD_SESS" ]; then
-    echo "saving Claude context for '$OLD_SESS' (/handoff)..."
+    echo "saving agent context for '$OLD_SESS' (/handoff)..."
     RESUME_ARGS="$(save_context_map "$OLD_SESS")" || SAVE_OK=0
   fi
 
@@ -168,11 +168,11 @@ else
   cd "$NEW_PATH"
   wt -C "$NEW_PATH" step copy-ignored --from "$OLD_BRANCH" --to "$NEW" --force >/dev/null 2>&1 || true
 
-  # Carry the old session's Claude context into the new one. The old session is
+  # Carry the old session's agent context into the new one. The old session is
   # kept here, so a failed save is non-fatal — the new session just starts cold.
   RESUME_ARGS=""
   if [ "$HANDOFF" = 1 ] && [ -n "$OLD_SESS" ]; then
-    echo "saving Claude context for '$OLD_SESS' (/handoff)..."
+    echo "saving agent context for '$OLD_SESS' (/handoff)..."
     RESUME_ARGS="$(save_context_map "$OLD_SESS")" \
       || { echo "warning: /handoff didn't finish — new session will start cold." >&2; RESUME_ARGS=""; }
   fi
