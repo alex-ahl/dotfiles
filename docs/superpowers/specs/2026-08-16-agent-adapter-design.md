@@ -18,7 +18,7 @@ Introduce a thin adapter so agent-specific behavior lives in one profile file
 per agent. Adding an agent becomes an additive change (one new file), with no
 edits to the workflow scripts. This task implements the adapter and the
 **Claude** profile only; behavior must remain byte-for-byte identical
-(`AI_AGENT` defaults to `claude`). The opencode profile comes later, once its
+(`WSG_AGENT` defaults to `claude`). The opencode profile comes later, once its
 CLI (session resume mechanism, context-dump equivalent) is verified.
 
 ## Non-goals
@@ -36,16 +36,16 @@ Two new files, reachable through the existing `~/.scripts` → `scripts/` symlin
 - `scripts/agents.d/claude.sh` — Claude profile
 
 Call sites `source` the loader once and call `agent_*` functions. The agent is
-selected by `$AI_AGENT` (default `claude`).
+selected by `$WSG_AGENT` (default `claude`).
 
 ### Loader — `scripts/lib/agent.sh`
 
 ```sh
 #!/usr/bin/env bash
-: "${AI_AGENT:=claude}"
+: "${WSG_AGENT:=claude}"
 : "${HANDOFF_DIR:=$HOME/handoffs}"
-_p="$(cd "$(dirname "${BASH_SOURCE[0]}")/../agents.d" && pwd)/${AI_AGENT}.sh"
-[ -r "$_p" ] || { echo "agent: unknown AI_AGENT '$AI_AGENT' ($_p missing)" >&2; exit 1; }
+_p="$(cd "$(dirname "${BASH_SOURCE[0]}")/../agents.d" && pwd)/${WSG_AGENT}.sh"
+[ -r "$_p" ] || { echo "agent: unknown WSG_AGENT '$WSG_AGENT' ($_p missing)" >&2; exit 1; }
 . "$_p"
 agent_is_window() { case " $(agent_windows) " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 ```
