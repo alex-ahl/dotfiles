@@ -75,7 +75,10 @@ branch with the merged branch deleted, then the session killed. Skips the
 default branch, dirty worktrees, and your current session. Before killing a
 session, the Claude context in its `ai-1`/`ai-2` panes is saved via `/handoff`
 (see below); a session whose handoff doesn't finish is left intact. Dry-run +
-confirm (`-y` to skip the prompt, `--no-handoff` to skip saving context).
+confirm (`-y` to skip the prompt). Context-saving has three modes: default saves
+all, `--no-handoff` saves none, `--handoff-ask` prompts per session (the
+`prefix + P` popup offers all / select / none). Only sessions started after the
+handoff settings can be saved unattended; ones that prompt are skipped after ~45s.
 
 `handoff-session.sh` — saves the Claude context of a wsg session via `/handoff`
 before teardown, covering both instances (`ai-1`=account1, `ai-2`=account2). Used
@@ -95,9 +98,9 @@ name). Behaviour depends on the current branch's PR state (`gh pr view`):
 - **merged** → new worktree off the latest default branch; changes **move** to
   it; the old worktree + session are **torn down** (the old session's Claude
   context is saved via `/handoff` first — if that fails, the old is kept).
-- **not merged** (after `y/N` confirm) → new worktree off the **current HEAD**
-  (carries the commits); changes are **copied**; the old worktree + session are
-  **kept** intact.
+- **not merged** → new worktree off the **current HEAD** (carries the commits);
+  changes are **copied**; the old worktree + session are **kept** intact
+  (non-destructive, so it just proceeds — no confirmation).
 
 Gitignored files (`.env`, caches) are copied across in both modes. Aborts
 non-destructively if the default branch can't be fast-forwarded (merged path)
