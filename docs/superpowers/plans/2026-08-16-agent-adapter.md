@@ -4,14 +4,14 @@
 
 **Goal:** Extract Claude-specific behavior from the worktree/session scripts into a small adapter (loader + per-agent profile) so a future agent (opencode) can be added without editing the workflow scripts.
 
-**Architecture:** A sourced shell library `scripts/lib/agent.sh` selects a profile from `scripts/agents.d/<name>.sh` via `$AI_AGENT` (default `claude`). Profiles expose six `agent_*` functions; the loader adds `agent_is_window`. Call sites (`workspace.sh`, `wt-session.sh`, `handoff-session.sh`) source the loader and call those functions. This task ships Claude only, behavior byte-for-byte identical.
+**Architecture:** A sourced shell library `scripts/lib/agent.sh` selects a profile from `scripts/agents.d/<name>.sh` via `$WSG_AGENT` (default `claude`). Profiles expose six `agent_*` functions; the loader adds `agent_is_window`. Call sites (`workspace.sh`, `wt-session.sh`, `handoff-session.sh`) source the loader and call those functions. This task ships Claude only, behavior byte-for-byte identical.
 
 **Tech Stack:** POSIX-ish bash (must run under macOS `/usr/bin/env bash`, avoid bash-4-only features), tmux (`-L wsg` socket), git worktrees.
 
 ## Global Constraints
 
 - Branch: `agent-adapter`. All commits land here.
-- `AI_AGENT` defaults to `claude`; existing behavior must be byte-for-byte identical.
+- `WSG_AGENT` defaults to `claude`; existing behavior must be byte-for-byte identical.
 - `$HOME` is `/Users/alex`; account dirs are `~/.claude-account1` / `~/.claude-account2`.
 - No new dependencies, no persistent test framework. Verification is a throwaway golden-output diff (scratchpad) plus one live smoke run.
 - Avoid bash-4-only syntax (target macOS bash 3.2 compatibility): plain indexed arrays and `"${arr[@]}"` are fine; no associative arrays, no `${var,,}`.
@@ -43,13 +43,13 @@ Create `scripts/lib/agent.sh`:
 ```sh
 #!/usr/bin/env bash
 # Agent adapter. `source` this, then call agent_* functions. Select the agent
-# with $AI_AGENT (default: claude). Add an agent by dropping a profile in
+# with $WSG_AGENT (default: claude). Add an agent by dropping a profile in
 # scripts/agents.d/<name>.sh that defines the six agent_* functions documented
 # in docs/superpowers/specs/2026-08-16-agent-adapter-design.md.
-: "${AI_AGENT:=claude}"
+: "${WSG_AGENT:=claude}"
 : "${HANDOFF_DIR:=$HOME/handoffs}"
-_p="$(cd "$(dirname "${BASH_SOURCE[0]}")/../agents.d" && pwd)/${AI_AGENT}.sh"
-[ -r "$_p" ] || { echo "agent: unknown AI_AGENT '$AI_AGENT' ($_p missing)" >&2; exit 1; }
+_p="$(cd "$(dirname "${BASH_SOURCE[0]}")/../agents.d" && pwd)/${WSG_AGENT}.sh"
+[ -r "$_p" ] || { echo "agent: unknown WSG_AGENT '$WSG_AGENT' ($_p missing)" >&2; exit 1; }
 . "$_p"
 
 # Derived from the profile's window list; used by handoff-session.sh's pane gate.
@@ -107,7 +107,7 @@ Create `<scratchpad>/agent-golden.sh` (substitute the real scratchpad path):
 ```sh
 #!/usr/bin/env bash
 set -e
-. "$HOME/.scripts/lib/agent.sh"          # AI_AGENT unset -> claude
+. "$HOME/.scripts/lib/agent.sh"          # WSG_AGENT unset -> claude
 echo "windows: $(agent_windows)"
 echo "launch ai-1 cold: $(agent_launch_cmd ai-1 "")"
 echo "launch ai-2 cold: $(agent_launch_cmd ai-2 "")"
