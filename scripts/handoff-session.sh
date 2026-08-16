@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# handoff-session.sh — save the Claude context of a wsg tmux session via the
-# `/handoff` command before the session is torn down. Covers both Claude
-# instances (ai-1 = account1, ai-2 = account2); `/handoff` is symlinked into
-# both configs and writes to the shared ~/handoffs/, so one trigger fits all.
+# handoff-session.sh — save the agent context of a wsg tmux session before the
+# session is torn down, by sending the agent's handoff command into each ai
+# window's pane. Agent specifics (which windows, the trigger keys, the output
+# file) come from scripts/lib/agent.sh; the default agent (claude) writes to
+# the shared ~/handoffs/ via `/handoff <slug>`.
 #
 # For this to run unattended, `/handoff`'s read-only steps must be allowed in
 # the target Claude's settings (see the `claude` package's settings.json
@@ -19,20 +20,9 @@
 # A file is "settled" once it exists, is non-empty, and hasn't been written to
 # for >=3s (so we don't proceed while /handoff is mid-write).
 
-HANDOFF_DIR="${HANDOFF_DIR:-$HOME/handoffs}"
+. "$(dirname "$0")/lib/agent.sh"     # sets HANDOFF_DIR; provides agent_* helpers
 WSG_SOCK="${WSG_SOCK:-wsg}"
 DEFAULT_TIMEOUT=180
-
-# True when a pane's foreground command is a live Claude (not a shell). Claude
-# Code reports its version (e.g. "2.1.165") as the process command.
-_is_claude_cmd() {
-  case "$1" in
-    "" | zsh | -zsh | bash | -bash | sh | fish | tmux | login | nvim | vim) return 1 ;;
-    claude | node) return 0 ;;
-    [0-9]*.[0-9]*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
 
 _slugify() { printf '%s' "$1" | tr '/ ' '--' | tr -cd '[:alnum:]._-'; }
 
@@ -45,31 +35,31 @@ _settled() {
   [ "$((now - m))" -ge 3 ]
 }
 
-# fire <session> -> trigger /handoff in each Claude pane; print "<window>|<pane>|<slug>".
+# fire <session> -> send handoff keys to each agent pane; print "<window>|<pane>|<slug>".
 cmd_fire() {
   local sess="$1"
   mkdir -p "$HANDOFF_DIR"
   tmux -L "$WSG_SOCK" list-panes -s -t "$sess" -F '#{window_name}|#{pane_id}|#{pane_current_command}' 2>/dev/null \
     | while IFS='|' read -r wname pid cmd; do
-        # Only the ai-* account windows run Claude. Gate on the window name (not
-        # just the command): _is_claude_cmd() matches a bare `node`, so without
-        # this a node dev-server/REPL in the shell or dev window would get
-        # `/handoff` typed into it, and its unmapped window name would later be
-        # dropped by wt-session.sh anyway.
-        case "$wname" in ai-*) ;; *) continue ;; esac
-        _is_claude_cmd "$cmd" || continue
+        # Only the agent's ai windows run the agent. Gate on the window name (not
+        # just the command): agent_is_cmd matches a bare `node`, so without this
+        # a node dev-server/REPL in the shell or dev window would get the handoff
+        # keys typed into it, and its unmapped window name would later be dropped
+        # by wt-session.sh anyway.
+        agent_is_window "$wname" || continue
+        agent_is_cmd "$cmd" || continue
         local base slug n
         base="$(_slugify "$sess")-$(_slugify "$wname")"
         # Reserve the slug's file atomically (noclobber) rather than testing
-        # existence: Claude writes the file later, so two concurrent fires would
+        # existence: the agent writes the file later, so two concurrent fires would
         # otherwise both see "no file" and pick the same slug, clobbering one
         # handoff. A settled file must be non-empty, so this empty placeholder
         # never counts as done.
         slug="$base"; n=2
-        until (set -o noclobber; : > "$HANDOFF_DIR/$slug.md") 2>/dev/null; do
+        until (set -o noclobber; : > "$(agent_handoff_file "$slug")") 2>/dev/null; do
           slug="$base-$n"; n=$((n + 1))
         done
-        tmux -L "$WSG_SOCK" send-keys -t "$pid" -l "/handoff $slug"
+        tmux -L "$WSG_SOCK" send-keys -t "$pid" -l "$(agent_handoff_keys "$slug")"
         sleep 0.4
         tmux -L "$WSG_SOCK" send-keys -t "$pid" Enter
         echo "$wname|$pid|$slug"
@@ -85,7 +75,7 @@ cmd_await() {
     all=1
     for entry in "$@"; do
       slug="${entry##*|}"
-      _settled "$HANDOFF_DIR/$slug.md" || { all=0; break; }
+      _settled "$(agent_handoff_file "$slug")" || { all=0; break; }
     done
     [ "$all" = 1 ] && return 0
     [ "$waited" -ge "$timeout" ] && return 1
@@ -96,7 +86,7 @@ cmd_await() {
 # check <pane|slug or slug>... -> 0 iff all settled now.
 cmd_check() {
   local e
-  for e in "$@"; do _settled "$HANDOFF_DIR/${e##*|}.md" || return 1; done
+  for e in "$@"; do _settled "$(agent_handoff_file "${e##*|}")" || return 1; done
   return 0
 }
 
