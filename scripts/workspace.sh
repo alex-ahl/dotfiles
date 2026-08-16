@@ -2,8 +2,9 @@
 # Ghostty + tmux workspace launcher.
 #
 # Opens one Ghostty window attached to a tmux session named after the
-# current workspace, with four windows: dev, ai-1, ai-2, shell.
-# ai-1 and ai-2 auto-run claude under separate CLAUDE_CONFIG_DIRs.
+# current workspace, with four windows: dev, ai-1, ai-2, shell. The ai-*
+# windows auto-run the configured agent (see scripts/lib/agent.sh; default
+# claude, one per CLAUDE_CONFIG_DIR).
 #
 # Setup:
 #   1. brew install --cask ghostty
@@ -14,6 +15,8 @@
 # Reset:  wsg --reset    (kills the tmux session for this workspace)
 
 set -Eeuo pipefail
+
+. "$(dirname "$0")/lib/agent.sh"
 
 # --- Workspace name derivation (mirrors ../workspace.sh) ---
 common=$(git rev-parse --git-common-dir 2>/dev/null || true)
@@ -56,10 +59,10 @@ if ! tm has-session -t "$SESSION" 2>/dev/null; then
   tm set-option -t "$SESSION" @workspace "$WS"
   tm new-window  -t "$SESSION:" -n dev -c "$PWD" \
     "zsh -ic 'nvim; exec zsh'"
-  tm new-window  -t "$SESSION:" -n ai-1 -c "$PWD" \
-    "zsh -ic 'CLAUDE_CONFIG_DIR=$HOME/.claude-account1 claude; exec zsh'"
-  tm new-window  -t "$SESSION:" -n ai-2 -c "$PWD" \
-    "zsh -ic 'CLAUDE_CONFIG_DIR=$HOME/.claude-account2 claude; exec zsh'"
+  for w in $(agent_windows); do
+    inner="$(agent_launch_cmd "$w" "")"
+    tm new-window  -t "$SESSION:" -n "$w" -c "$PWD" "zsh -ic '$inner; exec zsh'"
+  done
   tm select-window -t "$SESSION:shell"
 fi
 
