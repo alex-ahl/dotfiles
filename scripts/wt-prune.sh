@@ -135,8 +135,8 @@ echo "Will prune $n session(s):"
 } | column -t -s "$(printf '\t')"
 echo
 [ "$HANDOFF_MODE" != none ] \
-  && echo "Each session's Claude context is saved via /handoff before it's killed (--no-handoff to skip)." \
-  || echo "(--no-handoff: Claude context will NOT be saved)"
+  && echo "Each session's agent context is saved via /handoff before it's killed (--no-handoff to skip)." \
+  || echo "(--no-handoff: agent context will NOT be saved)"
 echo
 
 if [ "$YES" != 1 ]; then
@@ -145,10 +145,10 @@ if [ "$YES" != 1 ]; then
   case "$ans" in [yY] | [yY][eE][sS]) ;; *) echo "aborted."; exit 1 ;; esac
 fi
 
-# Phase 1 — fire /handoff in every planned session's Claude panes (parallel).
+# Phase 1 — fire /handoff in every planned session's agent panes (parallel).
 P_PAIRS=()
 if [ "$HANDOFF_MODE" != "none" ]; then
-  echo "saving Claude context (/handoff). Note: a session whose Claude prompts for"
+  echo "saving agent context (/handoff). Note: a session whose agent prompts for"
   echo "permission (e.g. started before the handoff settings) can't be saved"
   echo "unattended and will be skipped after a short wait."
   fired=0
@@ -179,7 +179,7 @@ for i in $(seq 0 $((n - 1))); do
   if [ -n "${pairs// /}" ]; then
     # shellcheck disable=SC2086
     if ! ~/.scripts/handoff-session.sh check $pairs; then
-      echo "skip: $sess — Claude /handoff didn't finish in time; left intact" >&2
+      echo "skip: $sess — agent handoff didn't finish in time; left intact" >&2
       continue
     fi
   fi
