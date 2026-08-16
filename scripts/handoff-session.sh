@@ -11,8 +11,8 @@
 # approvals into another live Claude.
 #
 # Subcommands:
-#   handoff-session.sh fire  <session>            # trigger /handoff in Claude panes; prints "<pane>|<slug>" lines
-#   handoff-session.sh await <timeout> <pair...>  # wait for each slug's file to settle (pairs are "<pane>|<slug>")
+#   handoff-session.sh fire  <session>            # trigger /handoff in Claude panes; prints "<window>|<pane>|<slug>" lines
+#   handoff-session.sh await <timeout> <pair...>  # wait for each slug's file to settle (slug is the last '|'-field)
 #   handoff-session.sh check <pair-or-slug...>    # exit 0 iff every slug's file has settled now
 #   handoff-session.sh run   <session>            # fire + await for one session (blocking)
 #
@@ -45,21 +45,34 @@ _settled() {
   [ "$((now - m))" -ge 3 ]
 }
 
-# fire <session> -> trigger /handoff in each Claude pane; print "<pane>|<slug>".
+# fire <session> -> trigger /handoff in each Claude pane; print "<window>|<pane>|<slug>".
 cmd_fire() {
   local sess="$1"
   mkdir -p "$HANDOFF_DIR"
   tmux -L "$WSG_SOCK" list-panes -s -t "$sess" -F '#{window_name}|#{pane_id}|#{pane_current_command}' 2>/dev/null \
     | while IFS='|' read -r wname pid cmd; do
+        # Only the ai-* account windows run Claude. Gate on the window name (not
+        # just the command): _is_claude_cmd() matches a bare `node`, so without
+        # this a node dev-server/REPL in the shell or dev window would get
+        # `/handoff` typed into it, and its unmapped window name would later be
+        # dropped by wt-session.sh anyway.
+        case "$wname" in ai-*) ;; *) continue ;; esac
         _is_claude_cmd "$cmd" || continue
         local base slug n
         base="$(_slugify "$sess")-$(_slugify "$wname")"
+        # Reserve the slug's file atomically (noclobber) rather than testing
+        # existence: Claude writes the file later, so two concurrent fires would
+        # otherwise both see "no file" and pick the same slug, clobbering one
+        # handoff. A settled file must be non-empty, so this empty placeholder
+        # never counts as done.
         slug="$base"; n=2
-        while [ -e "$HANDOFF_DIR/$slug.md" ]; do slug="$base-$n"; n=$((n + 1)); done
+        until (set -o noclobber; : > "$HANDOFF_DIR/$slug.md") 2>/dev/null; do
+          slug="$base-$n"; n=$((n + 1))
+        done
         tmux -L "$WSG_SOCK" send-keys -t "$pid" -l "/handoff $slug"
         sleep 0.4
         tmux -L "$WSG_SOCK" send-keys -t "$pid" Enter
-        echo "$pid|$slug"
+        echo "$wname|$pid|$slug"
       done
 }
 

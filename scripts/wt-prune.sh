@@ -19,12 +19,13 @@
 set -Eeuo pipefail
 
 YES=0
-HANDOFF=1
+HANDOFF_MODE=all          # all | ask | none
 for arg in "$@"; do
   case "$arg" in
     -y | --yes) YES=1 ;;
-    --no-handoff) HANDOFF=0 ;;
-    *) echo "usage: wt-prune [-y] [--no-handoff]" >&2; exit 1 ;;
+    --no-handoff) HANDOFF_MODE=none ;;
+    --handoff-ask) HANDOFF_MODE=ask ;;
+    *) echo "usage: wt-prune [-y] [--no-handoff | --handoff-ask]" >&2; exit 1 ;;
   esac
 done
 
@@ -80,7 +81,11 @@ while IFS='|' read -r sess spath; do
   cdir="$(cd "$spath" && cd "$cdir" 2>/dev/null && pwd || echo "$spath")"
   case " $fetched " in
     *" $cdir "*) ;;
-    *) echo "fetching $(basename "$(dirname "$cdir")")..." >&2
+    *) case "$cdir" in
+         */.bare | */.git) repo="$(basename "$(dirname "$cdir")")" ;;          # bare-worktree / regular repo
+         *) repo="$(basename "$(git -C "$spath" rev-parse --show-toplevel 2>/dev/null)")" ;;  # submodule/other
+       esac
+       echo "fetching ${repo:-$sess}..." >&2
        git -C "$spath" fetch -p --quiet 2>/dev/null || true
        fetched="$fetched $cdir" ;;
   esac
@@ -129,7 +134,7 @@ echo "Will prune $n session(s):"
   done
 } | column -t -s "$(printf '\t')"
 echo
-[ "$HANDOFF" = 1 ] \
+[ "$HANDOFF_MODE" != none ] \
   && echo "Each session's Claude context is saved via /handoff before it's killed (--no-handoff to skip)." \
   || echo "(--no-handoff: Claude context will NOT be saved)"
 echo
@@ -142,15 +147,28 @@ fi
 
 # Phase 1 — fire /handoff in every planned session's Claude panes (parallel).
 P_PAIRS=()
-if [ "$HANDOFF" = 1 ]; then
-  echo "saving Claude context (/handoff)... (approving prompts; this can take a bit)"
+if [ "$HANDOFF_MODE" != "none" ]; then
+  echo "saving Claude context (/handoff). Note: a session whose Claude prompts for"
+  echo "permission (e.g. started before the handoff settings) can't be saved"
+  echo "unattended and will be skipped after a short wait."
+  fired=0
   for i in $(seq 0 $((n - 1))); do
     [ "${P_KIND[$i]}" = "orphan" ] && { P_PAIRS[$i]=""; continue; }   # dead dir — nothing to save
+    if [ "$HANDOFF_MODE" = "ask" ]; then
+      printf "  save context for '%s' (%s)? [y/N] " "${P_SESS[$i]}" "${P_BRANCH[$i]}"
+      IFS= read -r ha
+      case "$ha" in [yY]*) ;; *) P_PAIRS[$i]=""; continue ;; esac
+    fi
     P_PAIRS[$i]="$(~/.scripts/handoff-session.sh fire "${P_SESS[$i]}" 2>/dev/null | tr '\n' ' ')"
+    fired=1
   done
-  # Phase 2 — approve prompts + wait once for all handoff files to settle.
-  # shellcheck disable=SC2086
-  ~/.scripts/handoff-session.sh await 180 ${P_PAIRS[*]:-} >/dev/null 2>&1 || true
+  # Phase 2 — wait (bounded) for the fired handoff files to settle. Sessions that
+  # prompt (old/no-permission) never settle and get skipped in phase 3.
+  if [ "$fired" = 1 ]; then
+    echo "waiting up to 45s for handoffs to finish..."
+    # shellcheck disable=SC2086
+    ~/.scripts/handoff-session.sh await 45 ${P_PAIRS[*]:-} >/dev/null 2>&1 || true
+  fi
 fi
 
 # Phase 3 — act on each session (skip any whose handoff didn't finish).
@@ -158,7 +176,7 @@ for i in $(seq 0 $((n - 1))); do
   sess="${P_SESS[$i]}"; spath="${P_PATH[$i]}"; branch="${P_BRANCH[$i]}"
   def="${P_DEF[$i]}"; kind="${P_KIND[$i]}"; reason="${P_REASON[$i]}"; ctx="${P_CTX[$i]}"
   pairs="${P_PAIRS[$i]:-}"
-  if [ "$HANDOFF" = 1 ] && [ -n "${pairs// /}" ]; then
+  if [ -n "${pairs// /}" ]; then
     # shellcheck disable=SC2086
     if ! ~/.scripts/handoff-session.sh check $pairs; then
       echo "skip: $sess — Claude /handoff didn't finish in time; left intact" >&2

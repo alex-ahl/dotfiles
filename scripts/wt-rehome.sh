@@ -20,6 +20,7 @@ set -Eeuo pipefail
 NEW="${1:-}"
 [ -z "$NEW" ] && { echo "usage: wt-rehome <new-worktree-name>" >&2; exit 1; }
 
+
 # --- Validate the source worktree ---------------------------------------------
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
   || { echo "not inside a git worktree" >&2; exit 1; }
@@ -57,17 +58,49 @@ if command -v gh >/dev/null 2>&1; then
 fi
 
 if [ "$MERGED" = 0 ]; then
-  echo "note: no merged PR detected for '$OLD_BRANCH'." >&2
-  printf "Branch '%s' off the CURRENT HEAD and keep this worktree/session intact? [y/N] " "$NEW" >&2
-  IFS= read -r ans
-  case "$ans" in [yY] | [yY][eE][sS]) ;; *) echo "aborted." >&2; exit 1 ;; esac
+  # Not merged → non-destructive fork: keep the old worktree + session, just
+  # branch a new one off the current HEAD. No confirmation needed.
+  echo "no merged PR for '$OLD_BRANCH' — forking '$NEW' off the current HEAD; old worktree/session kept."
 fi
 
 # In-progress work to carry? Detect now; actually stash only after each path's
 # abort-able preflight, so an early abort never leaves changes stranded.
 STASHED=0
 [ -n "$(git -C "$OLD_PATH" status --porcelain)" ] && STASHED=1
-do_stash() { [ "$STASHED" = 1 ] && git -C "$OLD_PATH" stash push -u -m "wt-rehome: $OLD_BRANCH -> $NEW" >/dev/null; }
+do_stash() { [ "$STASHED" = 1 ] && git -C "$OLD_PATH" stash push -u -m "wt-rehome: $OLD_BRANCH -> $NEW" >/dev/null; return 0; }
+
+# The wsg tmux session sitting on the old worktree (empty if none / no server).
+OLD_SESS="$(tmux -L wsg list-sessions -F '#{session_name}|#{session_path}' 2>/dev/null \
+  | awk -F'|' -v p="$OLD_PATH" '$2==p {print $1; exit}')"
+
+# Carry the old session's Claude context into the new one? Ask up front (default
+# yes) when there's a session to save and we're on a TTY; non-interactive runs
+# default to carrying.
+HANDOFF=1
+if [ -n "$OLD_SESS" ] && [ -t 0 ]; then
+  printf "Carry Claude context to '%s'? [Y/n] " "$NEW"
+  IFS= read -r _hc
+  case "$_hc" in [nN]*) HANDOFF=0 ;; esac
+fi
+
+# Save the old session's Claude context via /handoff and echo resume args
+# ("<window>=<slug>"...) for wt-session.sh, so the new session's ai windows boot
+# resumed. Returns non-zero if a fired handoff never settled in time (the caller
+# decides whether that's fatal). Echoes nothing when there are no Claude panes.
+save_context_map() {  # $1 = old session name
+  local sess="$1" lines pairs wname pid slug args=""
+  lines="$(~/.scripts/handoff-session.sh fire "$sess" 2>/dev/null)"
+  [ -z "$lines" ] && return 0
+  pairs="$(printf '%s\n' "$lines" | tr '\n' ' ')"
+  # shellcheck disable=SC2086
+  ~/.scripts/handoff-session.sh await 180 $pairs || return 1
+  while IFS='|' read -r wname pid slug; do
+    [ -n "$wname" ] && args="$args $wname=$slug"
+  done <<EOF
+$lines
+EOF
+  printf '%s' "$args"
+}
 
 if [ "$MERGED" = 1 ]; then
   # === MERGED: rehome off the latest default branch, then tear down old ========
@@ -87,7 +120,23 @@ if [ "$MERGED" = 1 ]; then
   [ -z "$NEW_PATH" ] && { echo "could not locate new worktree path for '$NEW'" >&2; exit 1; }
   cd "$NEW_PATH"   # old worktree dir is removed below; keep a valid cwd
   wt -C "$NEW_PATH" step copy-ignored --from "$OLD_BRANCH" --to "$NEW" --force >/dev/null 2>&1 || true
-  ~/.scripts/wt-session.sh "$NEW_PATH"
+
+  # Save the old session's Claude context BEFORE bringing up the new session, so
+  # its ai windows can resume it. If the handoff can't be saved we keep the old
+  # worktree + session intact and bring the new one up cold (below).
+  RESUME_ARGS=""; SAVE_OK=1
+  if [ "$HANDOFF" = 1 ] && [ -n "$OLD_SESS" ]; then
+    echo "saving Claude context for '$OLD_SESS' (/handoff)..."
+    RESUME_ARGS="$(save_context_map "$OLD_SESS")" || SAVE_OK=0
+  fi
+
+  # shellcheck disable=SC2086
+  # If we saved context but the new session already existed, wt-session exits
+  # non-zero (resume slugs not applied). Treat that like a failed save so the
+  # old session/worktree is kept intact below rather than torn down.
+  if ! ~/.scripts/wt-session.sh "$NEW_PATH" $RESUME_ARGS && [ -n "$RESUME_ARGS" ]; then
+    SAVE_OK=0
+  fi
 
   if [ "$STASHED" = 1 ] && ! git -C "$NEW_PATH" stash pop; then
     {
@@ -99,23 +148,16 @@ if [ "$MERGED" = 1 ]; then
     exit 1
   fi
 
-  # Save the old session's Claude context (/handoff) before tearing it down.
-  # If it can't be saved, keep the old worktree + session as-is.
-  OLD_SESS="$(tmux -L wsg list-sessions -F '#{session_name}|#{session_path}' 2>/dev/null \
-    | awk -F'|' -v p="$OLD_PATH" '$2==p {print $1; exit}')"
-  if [ -n "$OLD_SESS" ]; then
-    echo "saving Claude context for '$OLD_SESS' (/handoff)..."
-    if ! ~/.scripts/handoff-session.sh run "$OLD_SESS"; then
-      echo "warning: /handoff didn't finish for '$OLD_SESS' — keeping the old worktree + session intact." >&2
-      echo "done — created '$NEW' off latest $DEFAULT; old '$OLD_BRANCH' kept (context not saved)."
-      exit 0
-    fi
+  if [ "$SAVE_OK" = 0 ]; then
+    echo "warning: /handoff didn't finish for '$OLD_SESS' — keeping the old worktree + session intact." >&2
+    echo "done — created '$NEW' off latest $DEFAULT (cold); old '$OLD_BRANCH' kept (context not saved)."
+    exit 0
   fi
 
   echo "removing old worktree '$OLD_BRANCH'..."
   wt -C "$NEW_PATH" remove "$OLD_BRANCH" -f -y
   [ -n "$OLD_SESS" ] && tmux -L wsg kill-session -t "$OLD_SESS" 2>/dev/null || true
-  echo "done — rehomed '$OLD_BRANCH' -> '$NEW' (off latest $DEFAULT); old worktree removed."
+  echo "done — rehomed '$OLD_BRANCH' -> '$NEW' (off latest $DEFAULT); context carried; old worktree removed."
 else
   # === NOT MERGED: fork off the current HEAD, copy changes, keep old ===========
   do_stash
@@ -125,7 +167,18 @@ else
   [ -z "$NEW_PATH" ] && { echo "could not locate new worktree path for '$NEW'" >&2; exit 1; }
   cd "$NEW_PATH"
   wt -C "$NEW_PATH" step copy-ignored --from "$OLD_BRANCH" --to "$NEW" --force >/dev/null 2>&1 || true
-  ~/.scripts/wt-session.sh "$NEW_PATH"
+
+  # Carry the old session's Claude context into the new one. The old session is
+  # kept here, so a failed save is non-fatal — the new session just starts cold.
+  RESUME_ARGS=""
+  if [ "$HANDOFF" = 1 ] && [ -n "$OLD_SESS" ]; then
+    echo "saving Claude context for '$OLD_SESS' (/handoff)..."
+    RESUME_ARGS="$(save_context_map "$OLD_SESS")" \
+      || { echo "warning: /handoff didn't finish — new session will start cold." >&2; RESUME_ARGS=""; }
+  fi
+
+  # shellcheck disable=SC2086
+  ~/.scripts/wt-session.sh "$NEW_PATH" $RESUME_ARGS
 
   if [ "$STASHED" = 1 ]; then
     # New shares old's HEAD, so the stash applies cleanly. apply (don't drop) in
@@ -138,5 +191,5 @@ else
       echo "warning: changes applied with conflicts in '$NEW' — resolve them there. Old worktree untouched." >&2
     fi
   fi
-  echo "done — forked '$OLD_BRANCH' -> '$NEW' (off current HEAD); old worktree/session kept."
+  echo "done — forked '$OLD_BRANCH' -> '$NEW' (off current HEAD); context carried; old worktree/session kept."
 fi
