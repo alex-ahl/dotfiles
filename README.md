@@ -2,7 +2,12 @@
 
 Personal macOS dotfiles, managed with [GNU Stow](https://www.gnu.org/software/stow/).
 Each top-level dir is a stow "package" mirroring `$HOME`; `install.sh` symlinks them into
-place. `scripts/` is the exception — it's symlinked whole to `~/.scripts`.
+place. Two exceptions: `scripts/` is symlinked whole to `~/.scripts`, and `agents/` is a
+container of per-agent packages (claude, and later opencode, …) stowed with
+`stow -d agents` so e.g. `agents/claude/.claude-account1/` maps to `~/.claude-account1/`.
+Agent-neutral slash-command sources live in `agents/shared/commands/` and, together with
+the skills in `scripts/skills/`, are symlinked into each agent's config dirs by
+`agents/install.sh` (run from `install.sh`) — one source, shared across accounts/agents.
 
 ## Install (new machine)
 
@@ -58,7 +63,7 @@ Remove anything not in the Brewfile: `brew bundle cleanup --file=~/git/dotfiles/
 | `karabiner`| `~/.config/karabiner/karabiner.json`                        |
 | `worktrunk`| `~/.config/worktrunk/config.toml`                           |
 | `sol`      | `~/.config/sol/config.json`                                 |
-| `claude`   | `settings.json` + `commands/` + `agents/` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` |
+| `agents/claude` | `settings.json` + `commands/` + `agents/` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`) |
 | `nvim`     | `~/.config/nvim` (git submodule → `alex-ahl/nvim`)          |
 | `scripts`  | `~/.scripts` (symlinked dir, on PATH-style use)             |
 
@@ -85,7 +90,7 @@ before teardown, covering both instances (`ai-1`=account1, `ai-2`=account2). Use
 by `wt-prune` and `wt-rehome`; files land in `~/handoffs/<session>-<window>.md`,
 restored with `/resume <slug>`. It only triggers `/handoff` and waits — it never
 injects approvals into a live Claude. For it to run unattended, `/handoff`'s
-steps are allow-listed in the `claude` package's `settings.json`
+steps are allow-listed in the `agents/claude` package's `settings.json`
 (`permissions.allow`: `git status/log/rev-parse`, `ls`, `pwd`, `echo`, and
 `Edit(//…/handoffs/**)` for the file write; the rewritten `~/handoffs/commands/handoff.md`
 gathers context with expansion-free commands so nothing trips a prompt). This only
