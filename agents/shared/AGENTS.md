@@ -14,6 +14,13 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   repo** — run git and other tools in the current working directory (the shell
   cwd persists), so they match the read-only allowlist instead of prompting.
 
+- **Prefer atomic, expansion-free shell commands** — one command per Bash call
+  with literal arguments. Shell expansion (`$VAR`, `~`, `$(...)`, redirects,
+  `;`/`&&` chains, globs) can't be prefix-matched against the allowlist, so each
+  such command forces an approval prompt; a plain atomic command matches a rule
+  and runs silently. Split a compound/expanded command into separate literal
+  calls unless the expansion is genuinely load-bearing.
+
 - **Don't create spec / plan / brainstorming files on your own.** Some skills and
   workflows (e.g. Superpowers brainstorming, writing-plans) normally write — and
   commit — a design spec or implementation plan; skip writing those files and
