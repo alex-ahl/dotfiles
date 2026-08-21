@@ -26,6 +26,16 @@
       "Read(//Users/alex/git/**)",
       "Edit(//Users/alex/handoffs/**)"
     ],
+    "deny": [
+      "Read(//Users/alex/git/**/.env)",
+      "Read(//Users/alex/git/**/.env.*)",
+      "Read(//Users/alex/git/**/*.pem)",
+      "Read(//Users/alex/git/**/*.key)",
+      "Read(//Users/alex/git/**/id_rsa*)",
+      "Read(//Users/alex/git/**/*.p12)",
+      "Read(//Users/alex/git/**/.npmrc)",
+      "Read(//Users/alex/git/**/credentials*)"
+    ],
     "additionalDirectories": [
       "/Users/alex/handoffs"
     ]
