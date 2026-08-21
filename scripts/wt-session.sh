@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # Open (or attach) a wsg tmux session for a worktree and switch to it.
-# Called from wt's post-switch hook.  $1 = worktree path.
-# Session name follows the wsg convention: path relative to ~/git.
+# Called from wt's post-switch hook. $1 = worktree path.
+# Session name = path relative to ~/git (wsg convention).
 #
-# Optional extra args carry an agent context handoff into the new session:
+# Optional extra args carry an agent handoff into the new session:
 #   wt-session.sh <path> ai-1=<slug> ai-2=<slug>
-# A window named on the left boots the agent resumed from <slug> instead of
-# cold, loading the handoff at ~/handoffs/<slug>.md (see scripts/lib/agent.sh,
-# wt-rehome.sh / handoff.md).
+# Each named window boots the agent resumed from <slug> (loading
+# ~/handoffs/<slug>.md) instead of cold. See scripts/lib/agent.sh, wt-rehome.sh.
 set -e
 
 . "$(dirname "$0")/lib/agent.sh"
@@ -32,9 +31,9 @@ SOCK=wsg
 
 sess="${path#$HOME/git/}"
 
-# On first creation, scaffold the same 4 windows as wsg (workspace.sh):
+# On first creation, scaffold the same windows as wsg (workspace.sh):
 # shell + dev (nvim) + the agent's ai windows (see scripts/lib/agent.sh).
-# The zsh -ic '<cmd>; exec zsh' wrapper (run then drop to a shell) is applied
+# The `zsh -ic '<cmd>; exec zsh'` wrapper (run, then drop to a shell) is added
 # here; agent_launch_cmd returns just the inner command.
 scaffolded=0
 if ! "$TMUX_BIN" -L "$SOCK" has-session -t "$sess" 2>/dev/null; then
@@ -52,10 +51,9 @@ if ! "$TMUX_BIN" -L "$SOCK" has-session -t "$sess" 2>/dev/null; then
 fi
 "$TMUX_BIN" -L "$SOCK" switch-client -t "$sess"
 
-# Resume slugs only take effect during scaffolding above. If a session already
-# existed we can't apply them — fail loudly (exit 3) so a caller like wt-rehome
-# knows the handoff wasn't resumed and can keep the old session as a fallback
-# instead of tearing it down.
+# Resume slugs only apply during scaffolding. If the session already existed we
+# can't apply them — fail loudly (exit 3) so a caller like wt-rehome knows the
+# handoff wasn't resumed and keeps the old session as a fallback.
 if [ "$scaffolded" = 0 ] && [ "${#RESUME_ARGS[@]}" -gt 0 ]; then
   echo "wt-session: session '$sess' already existed — resume slugs (${RESUME_ARGS[*]}) NOT applied" >&2
   exit 3

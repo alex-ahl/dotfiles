@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
-# wt-prune — sweep all wsg tmux sessions and clean up the finished ones.
+# wt-prune [-y] [--no-handoff | --handoff-ask]
 #
-# A session qualifies for pruning when its git branch is either:
-#   • merged   — the branch has a MERGED PR (via `gh pr view`), or
-#   • gone      — its upstream was deleted on the remote (git '[gone]').
+# Sweep all wsg tmux sessions and clean up finished ones. Prints a plan and
+# asks for confirmation (unless -y) before changing anything.
 #
-# For a linked worktree: the worktree is removed AND the session killed.
-# For a regular (single-worktree) repo: it's switched back to the default
-# branch, the merged local branch is deleted, and the session killed.
+# A session qualifies when its branch is either:
+#   • merged — has a MERGED PR (via `gh pr view`), or
+#   • gone   — upstream deleted on the remote (git '[gone]').
 #
-# Always skipped: the default branch, dirty worktrees (uncommitted/untracked),
-# and the session you're currently attached to.
+#   linked worktree → worktree removed AND session killed.
+#   regular repo    → switched back to default, merged branch deleted, session killed.
 #
-#   wt-prune [-y]      -y / --yes : skip the confirmation prompt
-#
-# Prints a plan and asks for confirmation (unless -y) before changing anything.
+# Always skipped: the default branch, dirty worktrees, and the current session.
 
 set -Eeuo pipefail
 
@@ -61,8 +58,7 @@ SKIPS=()
 while IFS='|' read -r sess spath; do
   [ -z "$sess" ] && continue
 
-  # Orphan: the session's directory no longer exists (worktree already removed
-  # out from under it). Plan to just kill the dead session.
+  # Orphan: session's directory gone (worktree removed under it) — kill the dead session.
   if [ ! -e "$spath" ]; then
     if [ -n "$CUR" ] && [ "$sess" = "$CUR" ]; then
       SKIPS+=("$sess: directory gone but it's your current session — skipped")

@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # Print git branch (+ worktree name) for the tmux status bar.
 # Arg $1 = pane cwd. Silent (empty) when not in a git repo.
-# Tuned for a bare-repo-with-worktrees layout: every checkout is a
-# linked worktree, so show the worktree name only when it differs
-# from the branch (dirs are usually named after their branch).
+# Tuned for a bare-repo-with-worktrees layout: every checkout is a linked
+# worktree, so show the worktree name only when it differs from the branch
+# (worktree dirs are usually named after their branch).
 set -e
 cd "${1:-$PWD}" 2>/dev/null || exit 0
 
 branch=$(git branch --show-current 2>/dev/null) || exit 0
 
-# Linked worktree (incl. every checkout of a bare repo): its own
-# git-dir differs from the shared common dir. Normal repos: equal.
+# Linked worktree (incl. any checkout of a bare repo): its git-dir
+# differs from the shared common dir. Normal repos: equal.
 gitdir=$(git rev-parse --git-dir 2>/dev/null)
 common=$(git rev-parse --git-common-dir 2>/dev/null)
 in_wt=0

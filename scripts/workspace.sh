@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # Ghostty + tmux workspace launcher.
 #
-# Opens one Ghostty window attached to a tmux session named after the
-# current workspace, with four windows: dev, ai-1, ai-2, shell. The ai-*
-# windows auto-run the configured agent (see scripts/lib/agent.sh; default
-# claude, one per CLAUDE_CONFIG_DIR).
+# Opens one Ghostty window attached to a tmux session named after the current
+# workspace, with windows: dev, ai-1, ai-2, shell. The ai-* windows auto-run the
+# configured agent (see scripts/lib/agent.sh; default claude, one per CLAUDE_CONFIG_DIR).
 #
 # Setup:
 #   1. brew install --cask ghostty

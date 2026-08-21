@@ -62,7 +62,6 @@ parse_params() {
 
   args=("$@")
 
-  # check required params and arguments
   # [[ -z "${param-}" ]] && die "Missing required parameter: param"
   [[ ${#args[@]} -eq 0 ]] && die "Missing script arguments"
 

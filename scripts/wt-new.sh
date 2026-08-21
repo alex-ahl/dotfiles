@@ -4,10 +4,9 @@
 #
 #   wt-new <repo-dir> <branch>
 #
-# Unlike a bare `wt switch -c`, this fetches the default branch first and bases
-# the new branch off origin/<default>, so it starts from the freshest remote
-# tip — without checking out or mutating the local default branch. The fetch is
-# best-effort: offline (or no remote) falls back to the local default branch.
+# Unlike a bare `wt switch -c`, it bases the branch off origin/<default> (freshest
+# remote tip) without checking out or mutating the local default branch. Fetch is
+# best-effort: offline / no remote falls back to the local default branch.
 set -Eeuo pipefail
 
 DIR="${1:-}"; BRANCH="${2:-}"
@@ -26,8 +25,7 @@ fi
 done
 [ -z "$DEFAULT" ] && { echo "could not determine default branch for '$DIR'" >&2; exit 1; }
 
-# Fetch the latest default tip and base off origin/<default> when we can; else
-# fall back to the local default branch (offline / no remote).
+# Base off origin/<default> when the fetch succeeds; else local <default>.
 BASE="$DEFAULT"
 if git -C "$DIR" fetch origin "$DEFAULT" --quiet 2>/dev/null \
    && git -C "$DIR" show-ref --verify --quiet "refs/remotes/origin/$DEFAULT"; then
