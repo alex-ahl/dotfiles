@@ -9,9 +9,13 @@ REPO="$(cd .. && pwd)"
 
 COMMANDS="$PWD/shared/commands"      # version-controlled command sources
 SKILLS="$REPO/scripts/skills"       # version-controlled skill sources
+GLOBAL="$PWD/shared/AGENTS.md"      # global agent instructions (never commit, …)
 
 for acct in "$HOME/.claude-account1" "$HOME/.claude-account2"; do
   mkdir -p "$acct/commands" "$acct/skills"
+  # Claude reads global instructions from CLAUDE.md at the config-dir level.
+  # (A future opencode agent would get GLOBAL symlinked as its own AGENTS.md.)
+  ln -sfn "$GLOBAL" "$acct/CLAUDE.md"
   for f in "$COMMANDS"/*.md; do
     ln -sfn "$f" "$acct/commands/$(basename "$f")"
   done
@@ -20,4 +24,4 @@ for acct in "$HOME/.claude-account1" "$HOME/.claude-account2"; do
   done
 done
 
-echo "linked agent commands + skills into ~/.claude-account{1,2}"
+echo "linked global instructions + commands + skills into ~/.claude-account{1,2}"

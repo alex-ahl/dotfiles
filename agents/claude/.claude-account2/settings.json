@@ -23,6 +23,7 @@
       "Bash(tmux -L wsg list-sessions:*)",
       "Bash(tmux -L wsg show-options:*)",
       "Bash(tmux -L wsg show-option:*)",
+      "Read(//Users/alex/git/**)",
       "Edit(//Users/alex/handoffs/**)"
     ],
     "additionalDirectories": [
