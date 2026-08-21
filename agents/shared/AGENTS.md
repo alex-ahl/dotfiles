@@ -4,9 +4,11 @@ Applies to any AI coding agent (Claude Code, opencode, …) on this machine.
 Deployed into each agent's global-instructions location by `agents/install.sh`
 (for Claude, symlinked as `~/.claude-account*/CLAUDE.md`).
 
-- **Never run `git commit` or `git push`.** Make and stage changes, but leave
-  committing and pushing to the user — they commit their own work. This applies
-  in every repo, and overrides any skill/workflow step that would commit.
+- **Git is the user's to drive.** Never run `git commit` or `git push`, and never
+  create a branch (`git branch` / `checkout -b` / `switch -c`) without asking
+  first. Make and stage changes; leave committing, pushing, and branching to the
+  user. Applies in every repo, and overrides any skill/workflow step that would
+  commit or branch (e.g. executing-plans, finishing-a-development-branch).
 
 - **Don't prefix shell commands with `cd <dir> &&` when already working in that
   repo** — run git and other tools in the current working directory (the shell
@@ -29,3 +31,14 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
 - **Don't spawn subagents / background agents without approval.** Before
   launching any background or parallel agent work, say what you'd run and get an
   explicit go-ahead first.
+
+- **Be brief.** Lead with the answer; cut preamble, hedging, and restating the
+  question. Expand only when asked or when the task genuinely needs it.
+
+- **Answer in this shape:** (1) one-line direct answer; (2) supporting detail
+  only if needed; (3) one load-bearing caveat, only if it changes what the user
+  would do.
+
+- **Critique your own output before presenting it.** Check claims against
+  evidence and catch your own errors. Surface a caveat only when it changes what
+  the user would do — one line, no reflexive hedging.
