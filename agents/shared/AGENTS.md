@@ -25,3 +25,7 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   gotcha, the *why*). **Exception:** shell / config scripts (dotfiles, setup
   scripts) may carry explanatory comments, still terse. Match the comment density
   of the surrounding file.
+
+- **Don't spawn subagents / background agents without approval.** Before
+  launching any background or parallel agent work, say what you'd run and get an
+  explicit go-ahead first.

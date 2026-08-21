@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # repo-file-suggestion — custom `@` autocomplete source for Claude Code.
-# Wired via the `fileSuggestion` setting. Reads {"query":"..."} on stdin and
-# prints up to 15 newline-separated paths on stdout.
+# Wired via `fileSuggestion`: reads {"query":"..."} on stdin, prints up to 15
+# newline-separated paths on stdout.
 #
-# It REPLACES the built-in file finder, so it returns both:
-#   1. repo matches  — query against repo names under ~/git, resolved to their
-#      readable path (regular dir or default-branch worktree), listed first.
+# REPLACES the built-in file finder, so it returns both:
+#   1. repo matches  — repo names under ~/git, resolved to their readable path
+#      (regular dir or default-branch worktree), listed first.
 #   2. project files — fd over CLAUDE_PROJECT_DIR (literal, full-path match),
 #      preserving normal @-file completion.
 set -Eeuo pipefail

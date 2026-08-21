@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
-# handoff-session.sh — save the agent context of a wsg tmux session before the
-# session is torn down, by sending the agent's handoff command into each ai
-# window's pane. Agent specifics (which windows, the trigger keys, the output
-# file) come from scripts/lib/agent.sh; the default agent (claude) writes to
-# the shared ~/handoffs/ via `/handoff <slug>`.
+# handoff-session.sh — save each ai window's agent context before a wsg tmux
+# session is torn down, by sending the agent's handoff command into its pane.
+# Agent specifics (windows, trigger keys, output file) come from
+# scripts/lib/agent.sh; default agent (claude) writes ~/handoffs/ via `/handoff <slug>`.
 #
-# For this to run unattended, `/handoff`'s read-only steps must be allowed in
-# the target Claude's settings (see the `claude` package's settings.json
-# permissions). Without that, the running Claude prompts for approval, the file
-# never appears, and the caller leaves that session intact. We never inject
-# approvals into another live Claude.
+# Runs unattended only if `/handoff`'s read-only steps are pre-allowed in the
+# target Claude's settings.json — else Claude prompts for approval, no file
+# appears, and the caller keeps the session. We never inject approvals into a live Claude.
 #
 # Subcommands:
 #   handoff-session.sh fire  <session>            # trigger /handoff in Claude panes; prints "<window>|<pane>|<slug>" lines
@@ -17,8 +14,7 @@
 #   handoff-session.sh check <pair-or-slug...>    # exit 0 iff every slug's file has settled now
 #   handoff-session.sh run   <session>            # fire + await for one session (blocking)
 #
-# A file is "settled" once it exists, is non-empty, and hasn't been written to
-# for >=3s (so we don't proceed while /handoff is mid-write).
+# "settled" = file exists, non-empty, and unwritten for >=3s (so we don't proceed mid-write).
 
 . "$(dirname "$0")/lib/agent.sh"     # sets HANDOFF_DIR; provides agent_* helpers
 WSG_SOCK="${WSG_SOCK:-wsg}"
@@ -41,20 +37,17 @@ cmd_fire() {
   mkdir -p "$HANDOFF_DIR"
   tmux -L "$WSG_SOCK" list-panes -s -t "$sess" -F '#{window_name}|#{pane_id}|#{pane_current_command}' 2>/dev/null \
     | while IFS='|' read -r wname pid cmd; do
-        # Only the agent's ai windows run the agent. Gate on the window name (not
-        # just the command): agent_is_cmd matches a bare `node`, so without this
-        # a node dev-server/REPL in the shell or dev window would get the handoff
-        # keys typed into it, and its unmapped window name would later be dropped
-        # by wt-session.sh anyway.
+        # Gate on window name, not just command: agent_is_cmd matches a bare
+        # `node`, so a node dev-server/REPL in the shell/dev window would
+        # otherwise get handoff keys typed into it.
         agent_is_window "$wname" || continue
         agent_is_cmd "$cmd" || continue
         local base slug n
         base="$(_slugify "$sess")-$(_slugify "$wname")"
-        # Reserve the slug's file atomically (noclobber) rather than testing
-        # existence: the agent writes the file later, so two concurrent fires would
-        # otherwise both see "no file" and pick the same slug, clobbering one
-        # handoff. A settled file must be non-empty, so this empty placeholder
-        # never counts as done.
+        # Reserve the slug's file atomically (noclobber), not by existence test:
+        # the agent writes it later, so two concurrent fires would both see "no
+        # file" and pick the same slug, clobbering one handoff. "settled" requires
+        # non-empty, so this placeholder never counts as done.
         slug="$base"; n=2
         until (set -o noclobber; : > "$(agent_handoff_file "$slug")") 2>/dev/null; do
           slug="$base-$n"; n=$((n + 1))

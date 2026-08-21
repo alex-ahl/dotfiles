@@ -137,9 +137,9 @@ compinit
 # End of Docker CLI completions
 export PATH="$HOME/.local/bin:$PATH"
 
-# /etc/paths.d/dotnet-cli-tools writes a literal `~/.dotnet/tools` which
+# /etc/paths.d/dotnet-cli-tools writes a literal `~/.dotnet/tools` that
 # path_helper does NOT expand, so global dotnet tools (e.g. dotnet-easydotnet
-# used by easy-dotnet.nvim) aren't on PATH. Add the resolved path here.
+# for easy-dotnet.nvim) aren't on PATH. Add the resolved path here.
 export PATH="$HOME/.dotnet/tools:$PATH"
 
 iterm2_print_user_vars() {

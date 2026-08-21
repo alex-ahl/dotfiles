@@ -3,8 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# Install Homebrew packages from the Brewfile (skip with NO_BREW=1). This also
-# installs stow itself. Idempotent — already-installed packages are left alone.
+# Install Homebrew packages from the Brewfile (skip with NO_BREW=1); this also
+# installs stow itself. Idempotent.
 if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
   brew bundle --file="$PWD/Brewfile"
 fi
@@ -14,22 +14,22 @@ command -v stow >/dev/null || { echo "stow not found — run: brew install stow"
 # Pull in the nvim submodule on a fresh clone.
 git submodule update --init --recursive
 
-# Stow packages: each mirrors $HOME. -t "$HOME" because the repo lives under ~/git.
+# Stow packages: each mirrors $HOME. -t "$HOME" since the repo lives under ~/git.
 # Existing real dirs (e.g. ~/.claude) are descended into; missing dirs (e.g.
-# ~/.config/nvim, ~/.config/tmux) are folded into a single dir symlink.
+# ~/.config/nvim) are folded into a single dir symlink.
 stow -t "$HOME" \
   zsh git ssh harlequin docker ghostty tmux karabiner worktrunk sol nvim
 
 # Agent configs live under agents/ so multiple agents (claude, opencode, ...)
-# can be sibling packages. Stow them with agents/ as the stow dir, so e.g.
+# can be sibling packages. Stow with agents/ as the stow dir, so e.g.
 # agents/claude/.claude-account1/ maps to ~/.claude-account1/.
 stow -d "$PWD/agents" -t "$HOME" claude
 
 # Scripts are not a stow package — symlink the whole dir to ~/.scripts.
 ln -sfn "$PWD/scripts" "$HOME/.scripts"
 
-# Link shared agent commands (agents/shared/commands) + skills (scripts/skills)
-# into each agent's config dirs. Not stow — targets live inside runtime dirs.
+# Link shared agent commands + skills into each agent's config dirs.
+# Not stow — targets live inside runtime dirs.
 "$PWD/agents/install.sh"
 
 echo "dotfiles installed. Restart your shell (or: exec zsh)."
