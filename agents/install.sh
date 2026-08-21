@@ -7,7 +7,7 @@ cd "$(dirname "$0")"                 # agents/
 REPO="$(cd .. && pwd)"
 
 COMMANDS="$PWD/shared/commands"      # version-controlled command sources
-SKILLS="$REPO/scripts/skills"       # version-controlled skill sources
+SKILLS="$PWD/shared/skills"          # version-controlled skill sources
 GLOBAL="$PWD/shared/AGENTS.md"      # global agent instructions
 
 for acct in "$HOME/.claude-account1" "$HOME/.claude-account2"; do
