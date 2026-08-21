@@ -24,6 +24,8 @@
       "Bash(tmux -L wsg show-options:*)",
       "Bash(tmux -L wsg show-option:*)",
       "Read(//Users/alex/git/**)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
       "Edit(//Users/alex/handoffs/**)"
     ],
     "deny": [
