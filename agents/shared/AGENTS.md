@@ -4,6 +4,10 @@ Applies to any AI coding agent (Claude Code, opencode, …) on this machine.
 Deployed into each agent's global-instructions location by `agents/install.sh`
 (for Claude, symlinked as `~/.claude-account*/CLAUDE.md`).
 
+- **Ask before editing this file.** Never write to this file (or the deployed
+  `CLAUDE.md`) as a side effect of another task. Propose the exact wording and
+  wait for explicit approval before adding, changing, or removing a rule here.
+
 - **Git is the user's to drive.** Never run `git commit` or `git push`, and never
   create a branch (`git branch` / `checkout -b` / `switch -c`) without asking
   first. Make and stage changes; leave committing, pushing, and branching to the
@@ -42,3 +46,7 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
 - **Critique your own output before presenting it.** Check claims against
   evidence and catch your own errors. Surface a caveat only when it changes what
   the user would do — one line, no reflexive hedging.
+
+- **Routing what you learn** — before saving a durable fact, ask "would I want
+  this in a different repo tomorrow?" Yes → it's a global rule/preference; put it
+  in this file. No → it's project context; put it in per-project auto-memory.
