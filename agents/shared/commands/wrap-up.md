@@ -31,9 +31,17 @@ Steps:
    Other repos touched today: ask, don't guess. If the user names any, gather the same way for
    each. Their PR state via `gh` is useful but **will prompt** — only reach for it if asked.
 
-3. Ask two questions, and only two:
-   - **Stuck?** — anything blocked, or a dead end worth remembering.
+3. Two questions, and only two:
+   - **Blockers?** — anything blocked, plus dead ends worth remembering ("tried X, failed
+     because Y"). Not only what stops you — also what cost you an hour and might again.
    - **Next?** — what picks up tomorrow.
+
+   **Answer them yourself first, then ask for a correction, not an answer.** State your read of
+   both from the conversation and the commits, so "no / ok" is a complete reply. A one-word
+   confirmation is the expected case; only a genuinely blank day needs the user to type.
+
+   `$ARGUMENTS` may carry the answers directly (`/wrap-up no / code-review tomorrow`) — take them
+   and skip the asking entirely.
 
    Everything else comes from the commits, the diff, and this conversation. Don't interview the
    user for what the repo already knows.
@@ -51,15 +59,15 @@ Steps:
    ### Decisions
    - <choice + the reason — this is the part nothing else records>
 
-   ### Stuck
-   - <blockers, dead ends, "tried X, failed because Y">
+   ### Blockers
+   - <what's blocked, and dead ends: "tried X, failed because Y">
 
    ### Next
    - <what picks up tomorrow>
    ```
 
-   Omit any section with nothing real in it. Decisions and Stuck matter most: commits record what
-   worked, and nothing else records why, or what was abandoned.
+   Omit any section with nothing real in it. Decisions and Blockers matter most: commits record
+   what worked, and nothing else records why, or what was abandoned.
 
 5. Refresh `~/brain/TODO.md` — read it, then Edit. One `## <repo>` heading per repo, `- [ ]` items
    under it. Tick off what got done today, add what came out of **Next**, and leave the rest alone.

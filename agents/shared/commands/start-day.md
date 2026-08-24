@@ -48,7 +48,7 @@ Short. Six lines beats a page you skim.
 
 - **Since yesterday** — what moved, what's still in flight, anything from an `other` source that
   changes the day.
-- **Open loops** — from `TODO.md` and yesterday's Stuck/Next.
+- **Open loops** — from `TODO.md` and yesterday's Blockers/Next.
 - **Today** — propose two or three things, ordered, with the reason for the first one. Ask before
   treating it as settled; `$ARGUMENTS`, if given, is the user's steer on what matters.
 
