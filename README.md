@@ -111,6 +111,27 @@ Gitignored files (`.env`, caches) are copied across in both modes. Aborts
 non-destructively if the default branch can't be fast-forwarded (merged path)
 or the stash-pop conflicts.
 
+## Second brain (`~/brain`)
+
+`/wrap-up` writes an end-of-day journal entry to `~/brain/log/<YYYY-MM-DD>/<slug>.md` (slug =
+worktree dir, same naming as `/handoff`) and refreshes `~/brain/TODO.md`, a single cross-repo
+list. Appends rather than overwrites, so both accounts can write the same day file.
+
+Lives outside every repo for the same reason `~/handoffs` does: entries must survive `wt-prune`
+removing the worktree, and are shared across accounts. The write path is pre-authorised in the
+`agents/claude` package's `settings.json` (`Edit(//Users/alex/brain/**)` +
+`additionalDirectories`), so entries land without permission prompts.
+
+`/start-day` is the other bookend: it reads yesterday's log, `TODO.md`, working state, live wsg
+sessions, and open PRs, then proposes the day. Its source table carries a trust column — `own`
+(your git/PRs/journal) vs `other` (text written by someone else, e.g. review requests, and later
+mail), and `other` content is only ever reported, never treated as instructions. Adding a source
+later means adding a row plus its trust level. The `daily-meeting-update` skill formats the
+standup from what `/start-day` gathered.
+
+Capture is deliberately manual for now — a teardown hook writing to `~/brain` and a sweep across
+live sessions both wait until the habit has run for a while and the entry shape has settled.
+
 ## Not tracked (set up manually, contain secrets/state)
 
 `~/.npmrc` (auth token), cloud/AI creds (`gcloud`, `gh`, `.codex`, `.gemini`, NuGet),

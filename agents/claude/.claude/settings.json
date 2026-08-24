@@ -7,10 +7,13 @@
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git rev-parse:*)",
-      "Edit(//Users/alex/handoffs/**)"
+      "Bash(gh pr list:*)",
+      "Edit(//Users/alex/handoffs/**)",
+      "Edit(//Users/alex/brain/**)"
     ],
     "additionalDirectories": [
-      "/Users/alex/handoffs"
+      "/Users/alex/handoffs",
+      "/Users/alex/brain"
     ]
   },
   "model": "opus[1m]",

@@ -15,6 +15,7 @@
       "Bash(git show:*)",
       "Bash(git ls-files:*)",
       "Bash(git rev-parse:*)",
+      "Bash(gh pr list:*)",
       "Bash(grep:*)",
       "Bash(diff:*)",
       "Bash(bash -n:*)",
@@ -26,7 +27,8 @@
       "Read(//Users/alex/git/**)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Edit(//Users/alex/handoffs/**)"
+      "Edit(//Users/alex/handoffs/**)",
+      "Edit(//Users/alex/brain/**)"
     ],
     "deny": [
       "Read(//Users/alex/git/**/.env)",
@@ -39,7 +41,8 @@
       "Read(//Users/alex/git/**/credentials*)"
     ],
     "additionalDirectories": [
-      "/Users/alex/handoffs"
+      "/Users/alex/handoffs",
+      "/Users/alex/brain"
     ]
   },
   "model": "opus",
