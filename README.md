@@ -5,8 +5,8 @@ Each top-level dir is a stow "package" mirroring `$HOME`; `install.sh` symlinks 
 place. Two exceptions: `scripts/` is symlinked whole to `~/.scripts`, and `agents/` is a
 container of per-agent packages (claude, and later opencode, …) stowed with
 `stow -d agents` so e.g. `agents/claude/.claude-account1/` maps to `~/.claude-account1/`.
-Agent-neutral slash-command sources live in `agents/shared/commands/` and, together with
-the skills in `scripts/skills/`, are symlinked into each agent's config dirs by
+Agent-neutral slash-command sources live in `agents/shared/commands/` and the skills in
+`agents/shared/skills/`; both are symlinked into each agent's config dirs by
 `agents/install.sh` (run from `install.sh`) — one source, shared across accounts/agents.
 
 ## Install (new machine)
