@@ -85,7 +85,9 @@ many rounds are coming. The index holds one state, so commits are prepared stric
 time — stage commit 2 only after commit 1 has landed.
 
 Per commit, write the message to `<gitdir>/COMMIT_DRAFT`, where `<gitdir>` comes from
-`git rev-parse --absolute-git-dir` — not `.git`, which is a *file* in a linked worktree. An
+`git rev-parse --absolute-git-dir` — not `.git`, which is a *file* in a linked worktree. Use the
+**Write tool** for it, not a Bash heredoc or redirect: that path is pre-allowed, a redirect is
+not, so a heredoc turns every commit into a permission prompt. An
 autocmd reads that draft into the commit buffer and deletes it, so the user commits in neogit
 (`c c`) with the message already there and nothing to copy.
 

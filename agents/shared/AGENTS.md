@@ -8,15 +8,19 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   `CLAUDE.md`) as a side effect of another task. Propose the exact wording and
   wait for explicit approval before adding, changing, or removing a rule here.
 
-- **Git is the user's to drive.** Never run `git commit` or `git push`, and never
-  create a branch (`git branch` / `checkout -b` / `switch -c`) without asking
-  first. Make and stage changes; leave committing, pushing, and branching to the
-  user. Applies in every repo, and overrides any skill/workflow step that would
-  commit or branch (e.g. executing-plans, finishing-a-development-branch).
+- **Git is the user's to drive.** Staging needs no permission: `git add` and
+  `git restore --staged` are yours to run freely. Never run `git commit` or
+  `git push`, and never create a branch (`git branch` / `checkout -b` /
+  `switch -c`) without asking first. `git reset` needs asking too — it silently
+  discards staging I built by hand. Leave committing, pushing, and branching to
+  the user. Applies in every repo, and overrides any skill/workflow step that
+  would commit or branch (e.g. executing-plans, finishing-a-development-branch).
 
-- **Don't prefix shell commands with `cd <dir> &&` when already working in that
-  repo** — run git and other tools in the current working directory (the shell
-  cwd persists), so they match the read-only allowlist instead of prompting.
+- **Don't prefix shell commands with `cd <dir> &&` or `git -C <dir>` when already
+  working in that repo** — run git and other tools in the current working
+  directory (the shell cwd persists), so they match the read-only allowlist
+  instead of prompting. Allowlist rules are prefix matches, so `git -C <dir>
+  status` doesn't match a `git status` rule.
 
 - **Don't create spec / plan / brainstorming files on your own.** Some skills and
   workflows (e.g. Superpowers brainstorming, writing-plans) normally write — and

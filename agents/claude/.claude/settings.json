@@ -8,6 +8,10 @@
       "Bash(git log:*)",
       "Bash(git rev-parse:*)",
       "Bash(gh pr list:*)",
+      "Bash(git add:*)",
+      "Bash(git restore --staged:*)",
+      "Write(//Users/alex/git/**/.git/COMMIT_DRAFT)",
+      "Write(//Users/alex/git/**/.git/**/COMMIT_DRAFT)",
       "Edit(//Users/alex/handoffs/**)",
       "Edit(//Users/alex/brain/**)"
     ],
