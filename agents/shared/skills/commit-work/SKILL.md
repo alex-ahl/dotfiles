@@ -12,6 +12,11 @@ commit is one logical scope, and the message says *what* changed and *why*.
 runs `git commit`, `git push`, or creates branches — hand the message back and let the user
 commit.
 
+**Scope: this session, this repo.** Stage only changes made in this session, in the current
+worktree. Anything already modified when the session started belongs to whoever made it —
+list it so the user knows it's there, and leave it alone. A submodule is a separate repo: a
+dirty one gets reported, never staged or committed on the user's behalf.
+
 ## 1. Inspect before staging
 
 Run each as its own command in the current worktree (cwd persists; no `cd` prefix):
@@ -84,12 +89,15 @@ Name the whole boundary plan up front ("two commits: skills, then brain") so the
 many rounds are coming. The index holds one state, so commits are prepared strictly one at a
 time — stage commit 2 only after commit 1 has landed.
 
-Per commit, write the message to `<gitdir>/COMMIT_DRAFT`, where `<gitdir>` comes from
-`git rev-parse --absolute-git-dir` — not `.git`, which is a *file* in a linked worktree. Use the
-**Write tool** for it, not a Bash heredoc or redirect: that path is pre-allowed, a redirect is
-not, so a heredoc turns every commit into a permission prompt. An
-autocmd reads that draft into the commit buffer and deletes it, so the user commits in neogit
-(`c c`) with the message already there and nothing to copy.
+Per commit, write the message to `~/brain/COMMIT_DRAFT`. An editor autocmd reads it into the
+commit buffer and deletes it, so the user commits in neogit (`c c`) with the message already
+there and nothing to copy. Deliberately outside the repo: agents are commonly barred from
+writing inside `.git`, and one shared file is enough because commits are prepared one at a
+time and the draft is consumed on first open.
+
+Write the file directly rather than through a shell heredoc or redirect — a direct file write
+is one reviewable operation, while a redirect is an arbitrary shell command and far more likely
+to be gated.
 
 Then show:
 
@@ -97,5 +105,17 @@ Then show:
 - the drafted message, in the reply too — the draft file is consumed on first open
 - the verification result
 
-Wait for the user to commit before staging the next one. Never run `git commit` — the buffer is
-theirs to accept, edit, or discard.
+Wait for the user to commit before staging the next one.
+
+## Never
+
+- **Never `git add .` or `git add -A`** — they sweep in whatever else is dirty, which is
+  exactly the work you didn't make and can't describe.
+- **Never stage a change you didn't make this session** — you can't say what it's for, so the
+  message would be a guess. Report it and let the user decide.
+- **Never cross a repo boundary** — not into a submodule, not into another checkout. Each repo
+  gets its own session, its own staging, its own commit.
+- **Never commit a file whose staged diff you haven't read** — a secret is unreviewable once
+  it's in history, and rewriting shared history is worse than the leak.
+- **Never run `git commit` or `git push`** — the buffer is the user's to accept, edit, or
+  discard, and the commit is theirs to make.

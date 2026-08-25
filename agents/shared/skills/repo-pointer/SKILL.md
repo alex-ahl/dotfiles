@@ -20,7 +20,7 @@ Turn a short repo name into a concrete path to read and search.
    To see a repo's worktrees: `~/.scripts/repo-resolve.sh --worktrees <name>`.
 
 2. Act on the exit code:
-   - **0** — stdout is the absolute path. Announce it ("Looking in `<path>`.") and use that path as the base for all `Read`/`Grep`/`Glob`/`Bash` calls for this task. The user can run `/add-dir <path>` once to silence permission prompts; mention that if prompts appear.
+   - **0** — stdout is the absolute path. Announce it ("Looking in `<path>`.") and use it as the base for every file read, search, and command for this task. If access outside the current directory is refused or keeps asking, say so — the path has to be added to the working directories once, and the user is the one who can do it.
    - **3** (ambiguous) — candidate paths are on stderr. Show them, ask which one the user means, then use the chosen path directly.
    - **4** (none) — no match. Tell the user and offer `ls ~/git` to list options.
 

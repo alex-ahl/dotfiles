@@ -10,8 +10,7 @@
       "Bash(gh pr list:*)",
       "Bash(git add:*)",
       "Bash(git restore --staged:*)",
-      "Write(//Users/alex/git/**/.git/COMMIT_DRAFT)",
-      "Write(//Users/alex/git/**/.git/**/COMMIT_DRAFT)",
+      "Write(//Users/alex/brain/**)",
       "Edit(//Users/alex/handoffs/**)",
       "Edit(//Users/alex/brain/**)"
     ],
