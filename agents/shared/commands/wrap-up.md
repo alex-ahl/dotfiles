@@ -73,6 +73,11 @@ Steps:
    under it. Tick off what got done today, add what came out of **Next**, and leave the rest alone.
    Create the file if it isn't there yet.
 
+   **Record intentions, not state.** If a command can answer it, don't write it down: no commit
+   counts, no "4 commits ahead", no "as of <date>" qualifiers, no branch or PR status. They're
+   wrong the moment anything changes, and then they get read as current. "Push master" is a task;
+   "Push master (4 commits ahead as of Monday)" is a task plus a lie waiting to happen.
+
 6. Print the entry path and one line on what was captured.
 
 Rules:
