@@ -74,7 +74,8 @@ Steps:
    Omit any section with nothing real in it. Decisions and Blockers matter most: commits record
    what worked, and nothing else records why, or what was abandoned.
 
-5. Refresh that brain's `TODO.md` — read it, then Edit. One `## <repo>` heading per repo, `- [ ]` items
+5. Refresh that brain's `TODO.md` — read it, then Edit. One `## <repo>` heading per repo plus
+   `## life` for anything with no repo, `- [ ]` items
    under it. Tick off what got done today, add what came out of **Next**, and leave the rest alone.
    Create the file if it isn't there yet.
 

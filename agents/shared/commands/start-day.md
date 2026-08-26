@@ -20,7 +20,8 @@ an error and shouldn't be narrated.
 | TODO | `~/brain/{work,personal}/TODO.md` | — | own |
 | Working state | `git status --short`, `git log --since=midnight --oneline` | — | own |
 | Sessions | `tmux -L wsg list-sessions` — live worktrees, i.e. what's mid-flight | — | own |
-| Own PRs | `gh pr list --author @me --state open --json number,title,updatedAt` | prompts | own |
+| Own PRs | `gh pr list --author @me --state open --json number,title,updatedAt` | — | own |
+| Issues | `gh issue list --assignee @me --state open` — the TODO deliberately excludes tracked work, so this is where it comes from | — | **other** |
 | Review requests | `gh search prs --review-requested @me --state open` | prompts | **other** |
 
 **Trust is part of the contract, not a footnote.** `own` sources are facts about your own work.
@@ -62,6 +63,10 @@ Order is fixed: **Work → Personal → Today.**
 condition ("push master", "merge PR #1") gets checked against live state first. Already done →
 say so and treat it as stale, don't propose it. A dated note is evidence about the past, not a
 claim about the present.
+
+That includes **items linking an issue** (`#2`, `owner/repo#2`) — resolve the number. An open
+item pointing at a closed issue is the most common stale note there is, and the link is what
+makes it checkable.
 
 Then stop. Orientation is not the work, and it is not the standup — if the user wants the standup
 text, the `daily-meeting-update` skill formats it from the work brain.
