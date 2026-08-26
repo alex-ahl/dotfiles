@@ -1,81 +1,67 @@
 ---
 name: skill-judge
-description: Evaluate Agent Skill design quality — scores a SKILL.md across eight dimensions and returns actionable fixes. Use when reviewing, auditing, improving, or writing SKILL.md files and skill packages, or when asked whether a skill is any good.
+description: Check a skill before you rely on it — spec compliance, whether its content earns its tokens, and whether it actually changes behaviour. Use when writing, reviewing, auditing, or trimming a SKILL.md, or when asked whether a skill is worth keeping.
 ---
 
 # Skill judge
 
-Evaluate a skill against what actually makes skills work.
+Three passes: what the format requires, what the content is worth, and whether it changes
+anything. Only the third is evidence; the first two are checks.
 
-## The core formula
+## 1. Spec — mechanical, from the Agent Skills format
 
-> **Good skill = expert-only knowledge − what the model already knows.**
+- Valid frontmatter; `name` lowercase, hyphens, ≤64 chars, matching the directory.
+- `description` answers **what** it does, **when** to use it, and carries the words a user would
+  actually type. Agents see only descriptions when deciding what to load, so a vague one means
+  the skill never fires — excellent content behind it is dead weight.
+- Body under ~500 lines, ideally under 300. Heavier material goes in `references/`.
+- Every `references/` file has an explicit trigger at the step that needs it, and a "do not load"
+  where over-loading is the risk. A reference nothing triggers is never read.
 
-A skill's value is its **knowledge delta**. Explaining what a PDF is, or how to write a loop,
-compresses knowledge the model already has — that's not teaching, it's spending context. The
-context window is shared with the system prompt, the conversation, other skills, and the user's
-actual request.
+## 2. Content — sort every line into one of three
 
-Triage every section as one of:
+- **Knowledge** — true in any repo, for anyone ("inspect before staging", "don't commit
+  secrets"). The model has it. Delete.
+- **Preference** — a choice among things it already knows (50-char subjects; Conventional
+  Commits; three lessons, not ten). Keep, one line each. You're picking a branch, not teaching.
+- **Local fact** — only true here: the tools in use, the directory layout, the constraints of
+  this machine, the rule the user gave you. Keep all of it. This is the skill.
 
-- **[E] Expert** — the model genuinely doesn't know this. This is the skill.
-- **[A] Activation** — it knows, but might not think of it. Keep if brief.
-- **[R] Redundant** — it definitely knows. Delete.
+A skill that is mostly Knowledge is a skill you can delete. A skill with no Local fact and no
+Preference has nothing to say.
 
-Good skill: >70% E, <10% R. Bad skill: <40% E.
+## 3. Judgement — what no spec checks
 
-## Dimensions (120 points)
+- Is there a NEVER list, and is each entry specific enough to prevent something? "Be careful"
+  prevents nothing; "never `git add -A`, it sweeps in work you can't describe" does.
+- Does each NEVER carry its reason? The reason is what makes it survive contact with a case the
+  author didn't foresee.
+- Is the freedom level matched to the fragility? Ask what breaks if the agent gets it wrong.
+  Creative work gets principles; irreversible operations get exact steps.
+- Would someone who does this daily recognise it as their hard-won knowledge, or as advice?
 
-| # | Dimension | Max | What earns the points |
-|---|---|---|---|
-| D1 | **Knowledge delta** | 20 | Every paragraph earns its tokens. Decision trees for non-obvious choices, expert trade-offs, real edge cases. Instant ≤5 for "what is X" sections, standard-library tutorials, or generic "write clean code" advice. |
-| D2 | **Mindset + procedures** | 15 | Transfers how to *think* ("before X, ask yourself…") **and** procedures the model wouldn't know (non-obvious ordering, steps easy to miss). Generic open/edit/save sequences score 0-3. |
-| D3 | **Anti-patterns** | 15 | A specific NEVER list *with the reason*. "Avoid errors" is worth nothing; "never use purple-on-white gradients — it's the signature of AI-generated design" is expert knowledge. |
-| D4 | **Spec compliance, esp. `description`** | 15 | Valid frontmatter; `name` lowercase, ≤64 chars. The description must answer WHAT, WHEN, and carry trigger KEYWORDS. |
-| D5 | **Progressive disclosure** | 15 | Layer 1 metadata → Layer 2 body (<500 lines, ideally <300) → Layer 3 `references/` loaded on demand, with explicit triggers *and* "do NOT load" guidance. |
-| D6 | **Freedom calibration** | 15 | Constraint matched to fragility: creative work gets principles, fragile operations get exact steps. Ask "if the agent gets this wrong, what breaks?" |
-| D7 | **Pattern** | 10 | Recognisably one of: Mindset (~50 lines), Navigation (~30), Philosophy (~150), Process (~200), Tool (~300). |
-| D8 | **Usability** | 15 | Decision trees for branching cases, examples that actually run, fallbacks when the main path fails, edge cases. |
+## 4. Evidence — ablate it
 
-**Why D4 outweighs its size:** the agent sees only descriptions when deciding what to load. A
-skill with excellent content and a vague description is never activated at all — it is dead
-weight. "When to use this" belongs in the description, not the body.
+Everything above is opinion, including yours about your own writing. The one honest test: run the
+task **without** the skill and compare. What the agent did anyway was Knowledge. What only
+happened with the skill loaded is what the skill is worth.
 
-Grades: A ≥108 · B 96-107 · C 84-95 · D 72-83 · F <72.
-
-## Protocol
-
-1. Read the whole SKILL.md; mark each section E / A / R and compute the ratio.
-2. Check structure: frontmatter, line count, reference files and their load triggers, which
-   pattern it follows.
-3. Score each dimension — quote the specific line that justifies the score.
-4. Total, grade, and name the top three fixes in impact order.
-
-Report: score and grade, the E:A:R ratio, a one-line verdict, the dimension table, critical
-issues, then the three fixes. For anything under 80% of its max, say concretely what to change.
+Do this for skills you rely on. Reach for it whenever the argument for keeping one has become a
+discussion about how well written it is.
 
 ## Common failure patterns
 
-- **The tutorial** — explains basics. Delete them; keep decisions and trade-offs.
-- **The dump** — 800 lines, no layering. Route from the body, detail in `references/`.
-- **The orphan references** — a `references/` dir nothing ever loads. Add MANDATORY triggers at
-  the workflow step that needs them.
-- **The checkbox procedure** — mechanical Step 1/2/3. Convert to "before doing X, ask…".
-- **The vague warning** — "be careful". Replace with a specific NEVER plus its non-obvious reason.
-- **The invisible skill** — great body, weak description; never fires.
-- **The wrong location** — "when to use" buried in the body, where it's read too late.
-- **The over-engineered** — README, CHANGELOG, CONTRIBUTING around a skill. Ship what the agent needs.
+- **The tutorial** — explains basics. **The dump** — everything in the body, no layering.
+- **The orphan reference** — a `references/` file nothing triggers.
+- **The vague warning** — "be careful" instead of a specific NEVER plus its reason.
+- **The invisible skill** — good body, weak description, never fires.
+- **The wrong location** — "when to use this" in the body, read too late to matter.
 
 ## Never, when judging
 
 - **Never reward polish** — formatting is not knowledge.
-- **Never let length impress you** — 43 focused lines beat 500 padded ones.
-- **Never forgive redundancy** as "helpful context"; deduct for it.
-- **Never skip mentally running the decision trees** — do they actually reach the right branch?
-- **Never overlook a missing NEVER list** — that's a real gap, not a stylistic one.
-
-## The meta-question
-
-> Would an expert in this domain read it and say *"yes, that's what took me years to learn"*?
-
-If not, it's compressing what the model already knew.
+- **Never let length impress you** — 40 focused lines beat 500 padded ones.
+- **Never score your own skill and call it evidence** — you can't tell which of your own
+  paragraphs the model already knew. Sort by Knowledge/Preference/Local fact instead, which asks
+  a question you *can* answer, or ablate.
+- **Never forgive redundancy** as "helpful context".
