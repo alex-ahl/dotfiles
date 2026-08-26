@@ -67,15 +67,16 @@ type(scope): imperative summary
 
 What changed, and why it matters.
 
-BREAKING CHANGE: <consequence>   # only when it is one
+BREAKING CHANGE: <consequence>   # only when it is one; `type(scope)!:` also marks it
 ```
 
 - Types: `feat` `fix` `refactor` `chore` `docs` `test` `perf` `build` `ci`.
-- Summary: imperative, specific, no trailing period, ≤72 chars. "Fix token expiry off-by-one"
-  beats "Bug fix".
-- Body: intent and consequence, not an implementation diary. Omit it when the summary really
-  is the whole story.
-- `references/commit-message-template.md` has the bare template.
+- Summary: imperative and specific — "Fix token expiry off-by-one" beats "Bug fix". No trailing
+  period. Aim for 50 characters, hard limit 72: 50 stays readable in `git log --oneline` and
+  list views, and `type(scope): ` has already spent a dozen of them.
+- Body: intent and consequence, not an implementation diary. Wrap at 72 — `git log` indents
+  bodies four spaces, so 72 + 4 fits an 80-column terminal. Omit the body when the summary
+  really is the whole story.
 
 ## 7. Verify
 
