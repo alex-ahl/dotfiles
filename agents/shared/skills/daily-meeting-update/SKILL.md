@@ -10,7 +10,8 @@ they don't write the update. Ask before touching anything.
 
 ## 1. Detect and offer, before asking anything else
 
-**Read `~/brain/log/<yesterday>/` first, if it exists.** That's the journal, and it answers
+**Read `~/brain/work/log/<yesterday>/` first, if it exists** — the work brain only; the personal
+one isn't standup material. That's the journal, and it answers
 question 1 directly — including the decisions and dead ends that never reached a commit. With a
 log entry in hand, "what did you do yesterday?" becomes "anything to add?".
 

@@ -1,9 +1,10 @@
 ---
-description: End-of-day journal entry — append what happened to ~/brain/log/<date>/ and update ~/brain/TODO.md
+description: End-of-day journal entry — append what happened to the work or personal brain and update its TODO
 argument-hint: [note]
 ---
 
-Write today's journal entry to `~/brain/log/<YYYY-MM-DD>/<slug>.md` and refresh `~/brain/TODO.md`.
+Write today's journal entry to `~/brain/<brain>/log/<YYYY-MM-DD>/<slug>.md` and refresh
+`~/brain/<brain>/TODO.md`.
 
 **Permission-friendly gathering:** run each context command as its OWN Bash call, with no shell
 expansion — no `$VARIABLES`, no `~`, no `$(...)`, no redirects, no `;` / `&&` chaining. Expansion
@@ -13,10 +14,14 @@ forces an approval prompt; the plain commands below are pre-approved. Write file
 Steps:
 
 1. Resolve the target path:
+   - **Which brain — ask, don't infer.** `work` for the employer's services, repos and tickets;
+     `personal` for your own projects, code very much included. The split is whose work it is,
+     not whether it's code, and nothing in the repo reliably says which. `$ARGUMENTS` may carry
+     it (`/wrap-up work`), in which case don't ask.
    - Date: today, `YYYY-MM-DD`, from your own context — do not run `date`.
    - Slug: basename of the current working directory (derive it from the `pwd` output below).
      Matches how `/handoff` names its files, so a day's entries line up with its worktrees.
-   - Full path: `~/brain/log/<date>/<slug>.md`.
+   - Full path: `~/brain/<brain>/log/<date>/<slug>.md`.
    - Read that path first. **If it exists, append a new `## <HH:MM>` section — never overwrite.**
      A day file is a journal, and the other account's pane may already have written to it.
 
@@ -69,7 +74,7 @@ Steps:
    Omit any section with nothing real in it. Decisions and Blockers matter most: commits record
    what worked, and nothing else records why, or what was abandoned.
 
-5. Refresh `~/brain/TODO.md` — read it, then Edit. One `## <repo>` heading per repo, `- [ ]` items
+5. Refresh that brain's `TODO.md` — read it, then Edit. One `## <repo>` heading per repo, `- [ ]` items
    under it. Tick off what got done today, add what came out of **Next**, and leave the rest alone.
    Create the file if it isn't there yet.
 

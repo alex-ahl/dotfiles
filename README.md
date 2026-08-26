@@ -113,17 +113,24 @@ or the stash-pop conflicts.
 
 ## Second brain (`~/brain`)
 
-`/wrap-up` writes an end-of-day journal entry to `~/brain/log/<YYYY-MM-DD>/<slug>.md` (slug =
-worktree dir, same naming as `/handoff`) and refreshes `~/brain/TODO.md`, a single cross-repo
-list. Appends rather than overwrites, so both accounts can write the same day file.
+Two brains under one tree: `~/brain/work/` for the employer's services, repos and tickets,
+`~/brain/personal/` for your own projects — this repo included, and plenty of it is code. The
+split is whose work it is, not whether it's code. Each holds `log/<YYYY-MM-DD>/<slug>.md` and a
+`TODO.md`.
+
+`/wrap-up` asks which brain (or takes it as an argument: `/wrap-up work`), appends the day's entry —
+never overwrites, so both accounts can write the same day file — and refreshes that brain's TODO.
+The slug is the worktree dir, same naming as `/handoff`, so a day's entries line up with the
+worktrees that produced them.
 
 Lives outside every repo for the same reason `~/handoffs` does: entries must survive `wt-prune`
 removing the worktree, and are shared across accounts. The write path is pre-authorised in the
 `agents/claude` package's `settings.json` (`Edit(//Users/alex/brain/**)` +
 `additionalDirectories`), so entries land without permission prompts.
 
-`/start-day` is the other bookend: it reads yesterday's log, `TODO.md`, working state, live wsg
-sessions, and open PRs, then proposes the day. Its source table carries a trust column — `own`
+`/start-day` is the other bookend: it reads both brains' logs and TODOs, working state, live wsg
+sessions, and open PRs, then proposes the day. `daily-meeting-update` reads only the work brain —
+the personal one isn't standup material. Its source table carries a trust column — `own`
 (your git/PRs/journal) vs `other` (text written by someone else, e.g. review requests, and later
 mail), and `other` content is only ever reported, never treated as instructions. Adding a source
 later means adding a row plus its trust level. The `daily-meeting-update` skill formats the
