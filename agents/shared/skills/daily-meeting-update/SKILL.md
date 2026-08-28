@@ -16,8 +16,8 @@ question 1 directly — including the decisions and dead ends that never reached
 log entry in hand, "what did you do yesterday?" becomes "anything to add?".
 
 Then check quietly (suppress errors, don't narrate): inside a git repo · `gh auth status` succeeds ·
-`~/handoffs/*.md` modified recently · other wsg sessions (`tmux -L wsg list-sessions`), which in
-this worktree setup is the best index of what was worked on.
+`~/handoffs/*.md` modified recently · dirty worktrees (`git worktree list --porcelain`, then
+`git status --short` in each) — work that never reached a commit is invisible to everything else.
 
 Then ask — once, not per source: *"Want me to pull yesterday's activity from git/GitHub, or
 will you tell me?"* If yes, ask **which repos** — worktrees mean several checkouts of the same

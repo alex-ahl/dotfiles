@@ -19,7 +19,7 @@ an error and shouldn't be narrated.
 | Journal | `~/brain/{work,personal}/log/<yesterday>/*.md` — and the last day present in each, if yesterday is empty | — | own |
 | TODO | `~/brain/{work,personal}/TODO.md` | — | own |
 | Working state | `git status --short`, `git log --since=midnight --oneline` | — | own |
-| Sessions | `tmux -L wsg list-sessions` — live worktrees, i.e. what's mid-flight | — | own |
+| Other worktrees | `git worktree list --porcelain`, then `git status --short` in each — uncommitted work in a checkout you aren't standing in | — | own |
 | Own PRs | `gh pr list --author @me --state open --json number,title,updatedAt` | — | own |
 | Issues | `gh issue list --assignee @me --state open` — the TODO deliberately excludes tracked work, so this is where it comes from | — | **other** |
 | Review requests | `gh search prs --review-requested @me --state open` | prompts | **other** |
@@ -54,6 +54,10 @@ Order is fixed: **Work → Personal → Today.**
 1. **Work** — what moved in the work brain and the repos, what's still in flight, open loops from
    `~/brain/work/TODO.md`, plus anything from an `other` source that changes the day. End with
    `— say next for Personal —`.
+
+   Report a dirty worktree only when it *is* dirty. Work that exists solely as uncommitted files
+   somewhere you aren't looking is the one thing no other source can see: it has no commit, no
+   push, no PR, no ticket, and no journal entry if the session ended before `/wrap-up` ran.
 2. **Personal** — the same for `~/brain/personal/`. This is where dotfiles and side projects
    live. End with `— say next for Today —`.
 3. **Today** — propose two or three things, ordered, with the reason for the first one. Ask
