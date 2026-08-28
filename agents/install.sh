@@ -21,6 +21,12 @@ for acct in "$HOME/.claude-account1" "$HOME/.claude-account2"; do
   for d in "$SKILLS"/*/; do
     ln -sfn "${d%/}" "$acct/skills/$(basename "$d")"
   done
+  # Drop links whose source is gone (skill deleted or renamed upstream). Without
+  # this, a removed skill stays listed and loadable until someone deletes the
+  # link by hand. Only broken symlinks go — a real file here isn't ours to touch.
+  for l in "$acct/commands"/* "$acct/skills"/*; do
+    [ -L "$l" ] && [ ! -e "$l" ] && rm -- "$l" && echo "pruned stale link: $l"
+  done
 done
 
 echo "linked global instructions + commands + skills into ~/.claude-account{1,2}"
