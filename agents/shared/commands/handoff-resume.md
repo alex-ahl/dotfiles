@@ -1,6 +1,6 @@
 ---
 description: Load a handoff file from ~/handoffs/ and pick up where the previous session left off
-argument-hint: [name]
+argument-hint: [name|latest]
 ---
 
 Resume from a handoff at `~/handoffs/$ARGUMENTS.md`.
@@ -9,14 +9,19 @@ Steps:
 
 1. If `$ARGUMENTS` is empty:
    - `ls -lt ~/handoffs/*.md 2>/dev/null` to list available handoffs newest-first.
-   - Ask the user which one to load (or hint that they can pass the slug directly).
+   - Ask the user which one to load (or hint that they can pass the slug, or `latest`, directly).
    - Stop here until the user picks.
 
-2. If `$ARGUMENTS` is given:
+2. If `$ARGUMENTS` is `latest`:
+   - Resolve the newest handoff: `ls -t ~/handoffs/*.md 2>/dev/null | head -1`.
+   - If there are none, say so and stop.
+   - Print one line naming the slug you picked, then continue at step 4 with that file.
+
+3. If `$ARGUMENTS` is any other slug:
    - Read `~/handoffs/$ARGUMENTS.md`.
    - If missing, list nearest matches via `ls ~/handoffs/` and ask.
 
-3. After reading:
+4. After reading:
    - Print a 3–5 line summary: Goal, Branch, Last decision, Next action.
    - Resolve the allowed-repo set: the `Repo:` path plus every entry under `Related repos:` (if present). Treat all of them as valid working directories for this task.
    - Do NOT `cd` automatically. Compare `pwd` against the allowed-repo set:

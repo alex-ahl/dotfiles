@@ -88,7 +88,7 @@ handoff settings can be saved unattended; ones that prompt are skipped after ~45
 `handoff-session.sh` — saves the Claude context of a wsg session via `/handoff`
 before teardown, covering both instances (`ai-1`=account1, `ai-2`=account2). Used
 by `wt-prune` and `wt-rehome`; files land in `~/handoffs/<session>-<window>.md`,
-restored with `/resume <slug>`. It only triggers `/handoff` and waits — it never
+restored with `/handoff-resume <slug>`. It only triggers `/handoff` and waits — it never
 injects approvals into a live Claude. For it to run unattended, `/handoff`'s
 steps are allow-listed in the `agents/claude` package's `settings.json`
 (`permissions.allow`: `git status/log/rev-parse`, `ls`, `pwd`, `echo`, and

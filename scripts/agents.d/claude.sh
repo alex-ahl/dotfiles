@@ -10,7 +10,8 @@ _agent_env() { case "$1" in
 
 # window, resume-slug ("" = cold).
 agent_launch_cmd() {
-  if [ -n "$2" ]; then printf '%sclaude "/resume %s"' "$(_agent_env "$1")" "$2"
+  # /handoff-resume, not /resume — the latter is Claude's built-in session picker.
+  if [ -n "$2" ]; then printf '%sclaude "/handoff-resume %s"' "$(_agent_env "$1")" "$2"
   else                 printf '%sclaude'               "$(_agent_env "$1")"; fi
 }
 agent_continue_cmd() { printf '%sclaude --continue' "$(_agent_env "$1")"; }

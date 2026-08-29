@@ -63,7 +63,7 @@ Steps:
 
 4. Synthesise the Goal / Decisions / Current state / Open questions / Next actions sections from this conversation. Do not hallucinate — only include items actually discussed. If a section has no real content, omit it rather than padding.
 
-5. Print the final path and a one-line summary of what was captured. Remind the user they can resume with `/resume <slug>` from any folder, any account.
+5. Print the final path and a one-line summary of what was captured. Remind the user they can resume with `/handoff-resume <slug>` from any folder, any account.
 
 Rules:
 - Do not include secrets, tokens, or full credentials in the file even if they appeared in the conversation. Replace with `<REDACTED>`.
