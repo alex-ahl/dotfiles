@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Agent adapter. `source` this, then call agent_* functions. Select the agent
 # with $WSG_AGENT (default: claude); add one via a profile in
-# scripts/agents.d/<name>.sh defining the six agent_* funcs (see
+# scripts/agents.d/<name>.sh defining the seven agent_* funcs (see
 # docs/superpowers/specs/2026-08-16-agent-adapter-design.md).
 # Named WSG_AGENT not AI_AGENT: the Claude Code runtime already exports AI_AGENT
 # in every pane, which would override our selector.

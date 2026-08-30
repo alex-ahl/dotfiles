@@ -22,6 +22,9 @@ agent_continue_cmd() { printf 'sv shell "$PWD" -- zsh -lc "%sclaude --continue"'
 agent_handoff_keys() { printf '/handoff %s' "$1"; }
 agent_handoff_file() { printf '%s/%s.md' "$HANDOFF_DIR" "$1"; }
 
+# Process name as ps reports it, for the pane-tree walk in agent-badge.sh.
+agent_proc_name() { echo claude; }
+
 # pane_current_command -> 0 if it's a live Claude. Claude Code reports its
 # version (e.g. "2.1.165") as the process command; a bare `node` also counts.
 # Under sandvault the pane reports `sudo` (sv runs the agent through it).
