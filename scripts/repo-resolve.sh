@@ -11,6 +11,8 @@
 #   repo-resolve <query> [worktree]   resolve a repo; with a 2nd arg, pick that
 #                                     worktree (matched by dir name OR branch).
 #   repo-resolve --list               print every repo ROOT dir (cheap)
+#   repo-resolve --list-workspaces    print every workspace dir: each repo root,
+#                                     expanded to its worktrees (picker fodder)
 #   repo-resolve --path <dir>         print the readable path for a repo root
 #   repo-resolve --worktrees <query>  print the worktree paths of a repo
 # Exit: 0 ok, 2 usage, 3 ambiguous (candidates on stderr), 4 none.
@@ -105,6 +107,23 @@ case "${1:-}" in
     [ "${#roots[@]}" -gt 0 ] && printf '%s\n' "${roots[@]}"
     exit 0
     ;;
+  --list-workspaces)
+    # Every dir worth opening a workspace in: each repo root, expanded to its
+    # worktrees. `|| true`: a stale worktree pointer makes git exit 128, which
+    # under pipefail would abort the loop and silently truncate the list.
+    scan_roots
+    for root in ${roots[@]+"${roots[@]}"}; do
+      # Only bare-with-worktrees roots need a git call; a regular clone IS the
+      # workspace, and any worktree of it is already its own root via scan_roots.
+      if [ -d "$root/.bare" ]; then
+        wts="$( { list_worktrees "$root" || true; } | cut -f1)"
+        printf '%s\n' "${wts:-$root}"
+      else
+        printf '%s\n' "$root"
+      fi
+    done
+    exit 0
+    ;;
   --path)
     [ -n "${2:-}" ] || { echo "usage: repo-resolve --path <dir>" >&2; exit 2; }
     resolve_root "$2"
@@ -117,7 +136,7 @@ case "${1:-}" in
     exit 0
     ;;
   "")
-    echo "usage: repo-resolve <query> [worktree] | --list | --path <dir> | --worktrees <query>" >&2
+    echo "usage: repo-resolve <query> [worktree] | --list | --list-workspaces | --path <dir> | --worktrees <query>" >&2
     exit 2
     ;;
 esac
