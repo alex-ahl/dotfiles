@@ -1,9 +1,9 @@
 ---
-description: End-of-day journal entry — append what happened to the work or personal brain and update its TODO
-argument-hint: [note]
+description: Journal finished work — append what happened to the work or personal brain and update its TODO. Usually end of day, but whenever a stretch of work is done
+argument-hint: [date] [note]
 ---
 
-Write today's journal entry to `~/brain/<brain>/log/<YYYY-MM-DD>/<slug>.md` and refresh
+Write the session's journal entry to `~/brain/<brain>/log/<YYYY-MM-DD>/<slug>.md` and refresh
 `~/brain/<brain>/TODO.md`.
 
 **Permission-friendly gathering:** run each context command as its OWN Bash call, with no shell
@@ -18,7 +18,11 @@ Steps:
      `personal` for your own projects, code very much included. The split is whose work it is,
      not whether it's code, and nothing in the repo reliably says which. `$ARGUMENTS` may carry
      it (`/wrap-up work`), in which case don't ask.
-   - Date: today, `YYYY-MM-DD`, from your own context — do not run `date`.
+   - Date: **when the work happened**, `YYYY-MM-DD`, from your own context — do not run `date`.
+     Usually today, but a session that ran past midnight, or is wrapped the next morning,
+     belongs to the day it was worked. `$ARGUMENTS` may carry the date; if it doesn't and the
+     two differ, say which you picked. A day's entries have to sit under that day to be
+     readable in order later.
    - Slug: basename of the current working directory (derive it from the `pwd` output below).
      Matches how `/handoff` names its files, so a day's entries line up with its worktrees.
    - Full path: `~/brain/<brain>/log/<date>/<slug>.md`.
@@ -28,18 +32,20 @@ Steps:
 2. Gather — each as a SEPARATE, plain Bash call:
    - `pwd`
    - `git rev-parse --abbrev-ref HEAD`
-   - `git log --since=midnight --oneline`   (today's commits here)
+   - `git log --since=midnight --oneline`   (commits here)
+     Dating the entry earlier than today? Use `git log --since=yesterday --oneline` instead —
+     `midnight` would miss the very commits the entry is about.
    - `git status --short`                   (what's still in flight)
 
    If `$ARGUMENTS` is non-empty, treat it as the headline note for this entry.
 
-   Other repos touched today: ask, don't guess. If the user names any, gather the same way for
+   Other repos touched in this stretch: ask, don't guess. If the user names any, gather the same way for
    each. Their PR state via `gh` is useful but **will prompt** — only reach for it if asked.
 
 3. Two questions, and only two:
    - **Blockers?** — anything blocked, plus dead ends worth remembering ("tried X, failed
      because Y"). Not only what stops you — also what cost you an hour and might again.
-   - **Next?** — what picks up tomorrow.
+   - **Next?** — what picks this up again.
 
    **Answer them yourself first, then ask for a correction, not an answer.** State your read of
    both from the conversation and the commits, so "no / ok" is a complete reply. A one-word
@@ -68,7 +74,7 @@ Steps:
    - <what's blocked, and dead ends: "tried X, failed because Y">
 
    ### Next
-   - <what picks up tomorrow>
+   - <what picks this up again>
    ```
 
    Omit any section with nothing real in it. Decisions and Blockers matter most: commits record
@@ -76,7 +82,8 @@ Steps:
 
 5. Refresh that brain's `TODO.md` — read it, then Edit. One `## <repo>` heading per repo plus
    `## life` for anything with no repo, `- [ ]` items
-   under it. Tick off what got done today, add what came out of **Next**, and leave the rest alone.
+   under it. Tick off what this entry got done, add what came out of **Next**, and leave the rest
+   alone.
    Create the file if it isn't there yet.
 
    **Record intentions, not state.** If a command can answer it, don't write it down: no commit
