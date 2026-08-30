@@ -29,7 +29,10 @@ SOCK=wsg
 # No-op when there's no wsg server (e.g. running outside tmux).
 "$TMUX_BIN" -L "$SOCK" has-session 2>/dev/null || exit 0
 
-sess="${path#$HOME/git/}"
+# ~/git is a symlink into the sandvault share, but git reports canonical paths.
+GIT_ROOT="${GIT_ROOT:-$HOME/git}"
+ROOT_REAL="$(cd "$GIT_ROOT" && pwd -P)"
+sess="${path#"$ROOT_REAL"/}"; sess="${sess#"$GIT_ROOT"/}"
 
 # On first creation, scaffold the same windows as wsg (workspace.sh):
 # shell + dev (nvim) + the agent's ai windows (see scripts/lib/agent.sh).

@@ -16,7 +16,9 @@
 # Exit: 0 ok, 2 usage, 3 ambiguous (candidates on stderr), 4 none.
 set -Eeuo pipefail
 
-GIT_ROOT="${GIT_ROOT:-$HOME/git}"
+# Physical path: ~/git is a symlink on both sides of the sandbox, and paths
+# printed here are used by the other side.
+GIT_ROOT="$(cd "${GIT_ROOT:-$HOME/git}" && pwd -P)"
 MAXDEPTH="${REPO_RESOLVE_MAXDEPTH:-3}"
 
 lc() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
