@@ -52,6 +52,8 @@ brew "python@3.12"
 brew "redis"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
+# Run AI agents isolated in a sandboxed macOS user account
+brew "sandvault"
 # Organize software neatly under a single directory tree (e.g. /usr/local)
 brew "stow"
 # Tool to generate documentation from Terraform modules
@@ -80,6 +82,8 @@ cask "brave-browser"
 cask "cameracontroller"
 # Anthropic's official Claude AI desktop app
 cask "claude"
+# Terminal-based AI coding assistant; in /opt so the sandvault user shares it
+cask "claude-code"
 # Universal database tool and SQL client
 cask "dbeaver-community"
 # Voice and text chat software

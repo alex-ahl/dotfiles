@@ -15,12 +15,17 @@
       "Bash(git add:*)",
       "Bash(git restore --staged:*)",
       "Write(//Users/alex/brain/**)",
+      "Write(//Users/Shared/sv-alex/brain/**)",
       "Edit(//Users/alex/handoffs/**)",
-      "Edit(//Users/alex/brain/**)"
+      "Edit(//Users/Shared/sv-alex/handoffs/**)",
+      "Edit(//Users/alex/brain/**)",
+      "Edit(//Users/Shared/sv-alex/brain/**)"
     ],
     "additionalDirectories": [
       "/Users/alex/handoffs",
-      "/Users/alex/brain"
+      "/Users/alex/brain",
+      "/Users/Shared/sv-alex/handoffs",
+      "/Users/Shared/sv-alex/brain"
     ]
   },
   "model": "opus[1m]",

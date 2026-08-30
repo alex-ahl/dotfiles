@@ -23,6 +23,7 @@
       "Bash(git add:*)",
       "Bash(git restore --staged:*)",
       "Write(//Users/alex/brain/**)",
+      "Write(//Users/Shared/sv-alex/brain/**)",
       "Bash(grep:*)",
       "Bash(diff:*)",
       "Bash(bash -n:*)",
@@ -32,27 +33,40 @@
       "Bash(tmux -L wsg show-options:*)",
       "Bash(tmux -L wsg show-option:*)",
       "Read(//Users/alex/git/**)",
+      "Read(//Users/Shared/sv-alex/git/**)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Edit(//Users/alex/handoffs/**)",
-      "Edit(//Users/alex/brain/**)"
+      "Edit(//Users/Shared/sv-alex/handoffs/**)",
+      "Edit(//Users/alex/brain/**)",
+      "Edit(//Users/Shared/sv-alex/brain/**)"
     ],
     "deny": [
       "Read(//Users/alex/git/**/.env)",
+      "Read(//Users/Shared/sv-alex/git/**/.env)",
       "Read(//Users/alex/git/**/.env.*)",
+      "Read(//Users/Shared/sv-alex/git/**/.env.*)",
       "Read(//Users/alex/git/**/*.pem)",
+      "Read(//Users/Shared/sv-alex/git/**/*.pem)",
       "Read(//Users/alex/git/**/*.key)",
+      "Read(//Users/Shared/sv-alex/git/**/*.key)",
       "Read(//Users/alex/git/**/id_rsa*)",
+      "Read(//Users/Shared/sv-alex/git/**/id_rsa*)",
       "Read(//Users/alex/git/**/*.p12)",
+      "Read(//Users/Shared/sv-alex/git/**/*.p12)",
       "Read(//Users/alex/git/**/.npmrc)",
-      "Read(//Users/alex/git/**/credentials*)"
+      "Read(//Users/Shared/sv-alex/git/**/.npmrc)",
+      "Read(//Users/alex/git/**/credentials*)",
+      "Read(//Users/Shared/sv-alex/git/**/credentials*)"
     ],
     "additionalDirectories": [
       "/Users/alex/handoffs",
-      "/Users/alex/brain"
+      "/Users/alex/brain",
+      "/Users/Shared/sv-alex/handoffs",
+      "/Users/Shared/sv-alex/brain"
     ]
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "enabledPlugins": {},
   "extraKnownMarketplaces": {
     "caveman": {
@@ -62,5 +76,7 @@
       }
     }
   },
-  "theme": "dark-ansi"
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark-ansi",
+  "tui": "fullscreen"
 }
