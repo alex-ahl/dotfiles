@@ -156,6 +156,12 @@ Sandvault sources it into every sandbox shell. A fine-grained PAT covers one res
     export GH_OWNER_PERSONAL=''        # your login: gh api /user --jq .login
     export GH_TOKEN="$GH_TOKEN_WORK"   # default for bash scripts, which skip the function
     source ~/.scripts/lib/gh-token.sh  # routes gh by the target repo's owner
+    umask 002                          # see below
+
+`umask 002` matters on both sides: the share is co-owned by this account and `sandvault-$USER`
+(same group, setgid dirs), so 002 keeps every file editable from either side. With the default 022
+a checkout on one side silently strips the other's write access to exactly the files it rewrote,
+and only the *owner* can chmod it back. The host half lives in `zsh/.zshenv`.
 
 Host-side only needs your normal `gh auth login`; the router is inert without these vars.
 Without the file, `gh` is unauthenticated inside the sandbox and `/start-day` runs TODO-only.
