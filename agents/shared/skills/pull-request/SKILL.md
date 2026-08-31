@@ -18,7 +18,9 @@ Run each as its own command in the current worktree (cwd persists; no `cd` prefi
 - Commits on this branch: `git log --oneline <base>..HEAD`.
 - The diff: `git diff <base>...HEAD` (three dots — since the merge-base).
 - Linked issue, if any: infer the number from the branch name or commits, then
-  `gh issue view <n>` for its intent. The issue tells you the *why* and the test surface.
+  `gh api /repos/<owner>/<repo>/issues/<n>` for its intent — REST, not `gh issue view`, which
+  also resolves the repo's default branch and so needs read access to the code itself. The issue
+  tells you the *why* and the test surface.
 
 ## Title
 

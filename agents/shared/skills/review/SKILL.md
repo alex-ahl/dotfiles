@@ -46,9 +46,11 @@ Three rules bind this axis:
 ## 3. Spec
 
 Find what asked for this change, in order: an issue referenced in the commit messages or branch
-name (`gh issue view <n>`), a path the user gave, or a spec file under `docs/` or `specs/`
-matching the branch. If none exists, ask; if there is genuinely none, say "no spec available"
-and skip this axis rather than inventing a requirement to review against.
+name (`gh api /repos/<owner>/<repo>/issues/<n>` — REST, not `gh issue view`, which also resolves
+the repo's default branch and so needs read access to the code itself), a path the user gave, or a
+spec file under `docs/` or `specs/` matching the branch. If none exists, ask; if there is
+genuinely none, say "no spec available" and skip this axis rather than inventing a requirement to
+review against.
 
 With the spec in hand, report three things — quoting the line of the spec for each:
 
