@@ -39,12 +39,20 @@ _gh_owner() {
 }
 
 gh() {
-  local a owner='' t json=0
-  for a in "$@"; do [ "$a" = --json ] && json=1; done
+  local a prev='' owner='' t json=0 limit=''
+  for a in "$@"; do
+    [ "$a" = --json ] && json=1
+    case "$prev" in --limit|-L) limit="$a" ;; esac
+    case "$a" in --limit=*) limit="${a#--limit=}" ;; esac
+    prev="$a"
+  done
+  case "$limit" in ''|*[!0-9]*) limit=30 ;; esac   # gh's own default when unset
   owner="$(_gh_owner "$@")"
 
   # `search` uses the search API, which spans owners — and neither token can see
   # the other's repos, so run both and union. No dedup needed: one owner per repo.
+  # --limit is per invocation, so the union is re-sorted and sliced back to it —
+  # otherwise asking for 4 returns up to 8.
   if [ "${1:-}" = search ]; then
     if [ "$json" = 1 ]; then
       # Two invocations emit two JSON arrays; slurp and merge into one.
@@ -52,7 +60,8 @@ gh() {
           [ -n "$t" ] || continue
           _gh_with "$t" "$@"
         done
-      } | jq -s '(add // []) | sort_by(.updatedAt // "") | reverse'
+      } | jq -s --argjson n "$limit" \
+             '(add // []) | sort_by(.updatedAt // "") | reverse | .[0:$n]'
     else
       for t in "$GH_TOKEN_WORK" "$GH_TOKEN_PERSONAL"; do
         [ -n "$t" ] || continue
