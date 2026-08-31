@@ -26,8 +26,9 @@ project, and there are usually 2-5 in flight.
 Pull only what was approved:
 
 - Commits: `git log --author <user> --since yesterday --oneline` per approved repo.
-- PRs opened/merged: `gh pr list --author @me --state all --limit 20 --json number,title,state,updatedAt`
-  — current repo only; filter by `updatedAt` yourself rather than passing a search string.
+- PRs opened/merged: `gh search prs --author @me --limit 20 --json number,title,state,repository,updatedAt`
+  — omit `--state`: search accepts only `open|closed`, and leaving it off returns both. Filter by
+  `updatedAt` yourself rather than passing a search string.
 - Reviews given: `gh search prs --reviewed-by @me --updated ">=<date>"` — searches across repos,
   and returns nothing (exit 0) when there are none, so don't read silence as an error.
 - Handoffs written yesterday (`~/handoffs/`) — they capture research and decisions that never
