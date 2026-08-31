@@ -12,6 +12,7 @@
 #   sv build
 #   git clone <dotfiles> /Users/Shared/sv-$USER/git/dotfiles
 #   scripts/sandvault-sync.sh
+#   sv shell, then create $SHARE/user/.zshenv — gh tokens (README, "Not tracked")
 set -Eeuo pipefail
 
 SHARE="/Users/Shared/sv-$USER"

@@ -145,3 +145,19 @@ live sessions both wait until the habit has run for a while and the entry shape 
 all `.claude` runtime state (sessions, projects, cache, history, `.claude.json`,
 credentials), `.config/zellij`, `.config/opencode`, sol binary state, and the legacy
 iTerm2 `~/git/scripts/workspace.sh`.
+
+**Sandbox `gh` tokens** — `/Users/Shared/sv-$USER/user/.zshenv`. Outside the repo, and created
+from inside `sv shell`: that directory is owned by the sandbox user, so the host can't write it.
+Sandvault sources it into every sandbox shell. A fine-grained PAT covers one resource owner, so
+`gh` needs one per owner, both read-only (Issues, Pull requests, Metadata — no Contents):
+
+    export GH_TOKEN_WORK=''            # resource owner: the employer org
+    export GH_TOKEN_PERSONAL=''        # resource owner: your own account
+    export GH_OWNER_PERSONAL=''        # your login: gh api /user --jq .login
+    export GH_TOKEN="$GH_TOKEN_WORK"   # default for bash scripts, which skip the function
+    source ~/.scripts/lib/gh-token.sh  # routes gh by the target repo's owner
+
+Host-side only needs your normal `gh auth login`; the router is inert without these vars.
+Without the file, `gh` is unauthenticated inside the sandbox and `/start-day` runs TODO-only.
+`GH_OWNER_PERSONAL` is the easy one to forget, and it fails confusingly — personal-repo lookups
+route to the work token and come back as `Could not resolve to a Repository`.
