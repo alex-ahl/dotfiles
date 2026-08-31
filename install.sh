@@ -20,6 +20,10 @@ git submodule update --init --recursive
 stow -t "$HOME" \
   zsh git ssh harlequin docker ghostty tmux karabiner worktrunk sol nvim
 
+# ssh refuses a group- or world-writable config, and umask 002 (see zsh/.zshenv)
+# makes a checkout produce 664. Pin it — 640 still lets the sandbox read it.
+chmod 640 "$PWD/ssh/.ssh/config"
+
 # Agent configs live under agents/ so multiple agents (claude, opencode, ...)
 # can be sibling packages. Stow with agents/ as the stow dir, so e.g.
 # agents/claude/.claude-account1/ maps to ~/.claude-account1/.
