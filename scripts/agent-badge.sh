@@ -7,7 +7,8 @@
 # started by hand in the `home` session or in a shell/dev window went unbadged.
 # The pane's process tree is the honest signal, and it's agent-agnostic.
 #
-#   sandboxed = something under the pane went through sandbox-exec (sv's jail)
+#   sandboxed = something under the pane went through sandbox-exec (sv's jail),
+#               or through srt (sv -x + WSG_EGRESS, where srt owns the seatbelt)
 #   host      = the agent binary runs under the pane, unsandboxed
 #
 # A bare `sudo` matches neither — which is the whole point; the old format had to
@@ -32,7 +33,10 @@ badge=$(ps -Ao pid=,ppid=,args= | awk -v root="$pane_pid" -v agent="$(agent_proc
     q[1] = root; head = 1; tail = 1
     while (head <= tail) {
       p = q[head++]
-      if (cmd[p] ~ /sandbox-exec/) sandboxed = 1
+      # sv -x leaves no sandbox-exec argv, and srt execs into zsh — so match
+      # the live `node .../bin/srt` instead. "/srt " keeps it off the pane
+      # shell (which says " srt", no slash) and off srt-settings.json.
+      if (cmd[p] ~ /sandbox-exec/ || cmd[p] ~ /\/srt /) sandboxed = 1
       split(cmd[p], w, " "); base = w[1]; sub(/.*\//, "", base)
       if (base == agent) found = 1
       for (i = 1; i <= cnt[p]; i++) q[++tail] = kid[p, i]
