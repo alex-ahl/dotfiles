@@ -1,0 +1,36 @@
+{
+  "network": {
+    "allowedDomains": [
+      "api.anthropic.com",
+      "api.github.com",
+      "github.com",
+      "*.githubusercontent.com",
+      "registry.npmjs.org",
+      "pypi.org",
+      "files.pythonhosted.org"
+    ],
+    "deniedDomains": [
+      "*:22"
+    ],
+    "deniedDomainReasons": {
+      "*:22": "SSH is not available in the sandbox (no key, no known_hosts). Run git network operations on the host."
+    },
+    "allowLocalBinding": true
+  },
+  "filesystem": {
+    "allowRead": [
+      "/"
+    ],
+    "denyRead": [
+      "/Volumes"
+    ],
+    "allowWrite": [
+      "~",
+      "/Users/Shared",
+      "/private/tmp",
+      "/tmp"
+    ],
+    "denyWrite": []
+  },
+  "enableWeakerNetworkIsolation": true
+}
