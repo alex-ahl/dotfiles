@@ -1,13 +1,15 @@
 {
   "network": {
     "allowedDomains": [
+      "*.githubusercontent.com",
       "api.anthropic.com",
       "api.github.com",
+      "files.pythonhosted.org",
       "github.com",
-      "*.githubusercontent.com",
-      "registry.npmjs.org",
+      "google.se",
       "pypi.org",
-      "files.pythonhosted.org"
+      "registry.npmjs.org",
+      "www.google.se"
     ],
     "deniedDomains": [
       "*:22"
