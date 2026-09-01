@@ -19,6 +19,10 @@ claude/**/file-history/
 claude/**/todos/
 claude/**/backups/
 claude/**/mcp-needs-auth-cache.json
+# Per-project "allow always" grants, written by whichever session clicked them:
+# machine-local by design, and full of one-shot paths (a session scratchpad, a
+# home dir) that never match again. Anywhere in the tree, not just the package.
+**/settings.local.json
 
 # --- docker: only config.json + daemon.json are tracked ---
 docker/.docker/.token_seed
