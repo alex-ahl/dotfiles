@@ -24,6 +24,10 @@ stow -t "$HOME" \
 # makes a checkout produce 664. Pin it — 640 still lets the sandbox read it.
 chmod 640 "$PWD/ssh/.ssh/config"
 
+# The egress allowlist is the user's to extend, so the sandbox account reads it
+# but must not write it — otherwise an agent can approve its own domains.
+chmod 644 "$PWD/scripts/lib/srt-settings.json"
+
 # Agent configs live under agents/ so multiple agents (claude, opencode, ...)
 # can be sibling packages. Stow with agents/ as the stow dir, so e.g.
 # agents/claude/.claude-account1/ maps to ~/.claude-account1/.

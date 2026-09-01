@@ -167,3 +167,41 @@ Host-side only needs your normal `gh auth login`; the router is inert without th
 Without the file, `gh` is unauthenticated inside the sandbox and `/start-day` runs TODO-only.
 `GH_OWNER_PERSONAL` is the easy one to forget, and it fails confusingly — personal-repo lookups
 route to the work token and come back as `Could not resolve to a Repository`.
+
+## Egress filtering (`WSG_EGRESS`)
+
+Sandvault bounds the filesystem but not the network, so the sandbox has unrestricted outbound by
+default. `WSG_EGRESS=1` in the environment that launches a session wraps the agent in
+[srt](https://www.npmjs.com/package/@anthropic-ai/sandbox-runtime) with an allow-only domain list
+(`scripts/lib/srt-settings.json`). Unset, panes launch exactly as before.
+
+Needs srt installed **on the host**, with Homebrew's npm rather than nvm's — nvm installs under
+`~/.nvm`, which the sandbox account can't read:
+
+```sh
+/opt/homebrew/bin/npm install -g @anthropic-ai/sandbox-runtime
+```
+
+It runs under `sv -x`, because seatbelt doesn't nest: srt is `sandbox-exec` too, so sandvault's own
+profile has to be off for srt's to apply. Sandvault still supplies the separate UID, which is the
+boundary POSIX enforces; srt supplies the policy.
+
+Adding a domain is deliberately yours — `install.sh` pins the settings file to 644 so the sandbox
+reads the allowlist but cannot extend it. When the agent reports a blocked host, add it and commit,
+so the allowlist's history *is* the approval record:
+
+```sh
+jq '.network.allowedDomains |= (. + ["example.com"] | unique)' \
+  scripts/lib/srt-settings.json > /tmp/s && mv /tmp/s scripts/lib/srt-settings.json
+```
+
+srt reads its settings once at startup, so a new domain applies to the next pane, not a running one.
+A block reaches the agent as a dead connection with no explanation — `Socket is closed` from
+WebFetch, `CONNECT tunnel failed` / exit 56 from curl — never as an HTTP 403, since no reply
+arrives at all. `srt -s scripts/lib/srt-settings.json --debug <cmd>` names the refused host.
+
+Two settings are load-bearing and non-obvious: `allowPty` (without it a TUI can't enter raw mode
+and mouse movement types escape sequences) and `enableWeakerNetworkIsolation` (Go binaries verify
+TLS through `trustd`, so `gh` fails on every request without it). Clipboard is *not* granted:
+copy-to-clipboard from inside the sandbox would need `allowMachLookup` for the pasteboard, which
+also hands the agent `pbpaste`. Shift-drag selects at the terminal instead.

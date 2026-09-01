@@ -36,6 +36,8 @@ brew "kubernetes-cli"
 brew "lazygit", link: false
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node"
 # Package manager for Microsoft development platform including .NET
 brew "nuget"
 # Development kit for the Java programming language
