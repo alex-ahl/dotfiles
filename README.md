@@ -234,3 +234,22 @@ and mouse movement types escape sequences) and `enableWeakerNetworkIsolation` (G
 TLS through `trustd`, so `gh` fails on every request without it). Clipboard is *not* granted:
 copy-to-clipboard from inside the sandbox would need `allowMachLookup` for the pasteboard, which
 also hands the agent `pbpaste`. Shift-drag selects at the terminal instead.
+
+**Claude's OAuth token lives in a file here, not the keychain.** Under srt the keychain is
+readable but not writable — `security find-generic-password` succeeds, `add-generic-password`
+fails with `UNIX[Operation not permitted]`. So `/login` falls back to
+`~/.claude-account$N/.credentials.json`, while startup still *reads* the keychain first. A
+credential written by a non-srt pane therefore shadows every later login: the pane reads the old
+token, refreshes it, gets `401 OAuth access token has been revoked`, and wipes the file it just
+wrote. Delete the stale items once and the fallback takes over:
+
+    sv shell -- security delete-generic-password -s "Claude Code-credentials-<hash>"
+
+`sv shell`, not `sv -x` — srt is what can't write. The `<hash>` suffixes one item per config dir;
+`sv shell -- security dump-keychain ~/Library/Keychains/sandvault.keychain-db` lists them.
+
+The trap is the delay: access tokens last 8 hours, so a pane keeps working all morning on a token
+minted before the shadowing existed, then fails hours later looking like a network problem. Check
+`accessTokenLen` in `.credentials.json` — cleared within a second of pane start means the keychain
+is being read, not the file. (`allowMachLookup` may explain the read/write split; granting it for
+the keychain is untested, and it is the same knob the clipboard note above declines.)
