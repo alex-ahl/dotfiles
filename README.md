@@ -196,9 +196,20 @@ jq '.network.allowedDomains |= (. + ["example.com"] | unique)' \
 ```
 
 srt reads its settings once at startup, so a new domain applies to the next pane, not a running one.
-A block reaches the agent as a dead connection with no explanation — `Socket is closed` from
-WebFetch, `CONNECT tunnel failed` / exit 56 from curl — never as an HTTP 403, since no reply
-arrives at all. `srt -s scripts/lib/srt-settings.json --debug <cmd>` names the refused host.
+Deliberately: `--control-fd` would hot-swap the allowlist live (the proxy re-reads
+`network.allowedDomains` per request), but it needs a feeder process holding a readable fd for the
+pane's life, which is the runtime protocol a commit-and-relaunch exists to avoid — and srt spawns
+its child with inherited stdio, so a read-write control fd would likely hand the agent the
+self-approval the 644 pin denies it. Relaunching the pane is manual today:
+`agent_continue_cmd` exists in the agent profile for it, but nothing calls it yet.
+
+A block does return an HTTP 403 — the *proxy's*, not the server's. It answers the CONNECT with
+`403` plus `X-Proxy-Error: blocked-by-allowlist`, so the tunnel never opens: `CONNECT tunnel
+failed, response 403` and exit 56 from curl, `Socket is closed` from WebFetch. A real 403 arrives
+inside an established connection, as the answer to the request itself. `srt -s
+scripts/lib/srt-settings.json --debug <cmd>` names the refused host (`--debug` just sets
+`SRT_DEBUG`, which is the only thing that makes srt log at all — and it logs to stderr, shared with
+the sandboxed child).
 
 Two settings are load-bearing and non-obvious: `allowPty` (without it a TUI can't enter raw mode
 and mouse movement types escape sequences) and `enableWeakerNetworkIsolation` (Go binaries verify
