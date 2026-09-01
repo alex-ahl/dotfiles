@@ -86,6 +86,11 @@ Steps:
    alone.
    Create the file if it isn't there yet.
 
+   Every open item carries a permanent id after the checkbox — `- [ ] [p9] <item>`, `[w<n>]` in
+   work and `[p<n>]` in personal. A new item takes the highest id already in that file plus one,
+   counting ticked ones; ticking keeps the id on the line. Never renumber or reuse an id — gaps
+   are expected, and a reference in an old entry has to keep meaning the same item.
+
    **Record intentions, not state.** If a command can answer it, don't write it down: no commit
    counts, no "4 commits ahead", no "as of <date>" qualifiers, no branch or PR status. They're
    wrong the moment anything changes, and then they get read as current. "Push master" is a task;
