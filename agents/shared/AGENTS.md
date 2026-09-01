@@ -16,6 +16,16 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   the user. Applies in every repo, and overrides any skill/workflow step that
   would commit or branch (e.g. executing-plans, finishing-a-development-branch).
 
+- **An egress block is not a real 403.** Policy shows as the request dying before
+  any reply arrives — `Socket is closed`, `CONNECT tunnel failed`, curl exit 56,
+  a bare connection reset — because the sandbox's allowlist refused the host and
+  there's no prompt to say so. A 403 that arrives *as the server's answer* is the
+  service saying no; handle it normally. On a block: stop, name the host and why
+  you needed it, and give me the command that adds it. Never retry and never
+  route around it via a mirror. If the refused host isn't the one you requested
+  (a redirect, a sub-resource), say so rather than guessing. The allowlist is
+  mine to edit — that's the point.
+
 - **Don't prefix shell commands with `cd <dir> &&` or `git -C <dir>` when already
   working in that repo** — run git and other tools in the current working
   directory (the shell cwd persists), so they match the read-only allowlist
