@@ -32,5 +32,6 @@
     ],
     "denyWrite": []
   },
-  "enableWeakerNetworkIsolation": true
+  "enableWeakerNetworkIsolation": true,
+  "allowPty": true
 }
