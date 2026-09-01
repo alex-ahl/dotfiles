@@ -19,11 +19,14 @@ _agent_srt_settings="$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd -P)/srt
 # gives one seatbelt each — sandvault the separate UID, srt the policy.
 # srt must wrap zsh, never `srt -c '<string>'`: that runs bash, which skips
 # .zshenv, so the gh token router's function would not exist (see lib/gh-token.sh).
+# ${PWD:A}, not $PWD: .zshrc re-enters the share through ~/git so the prompt can
+# shorten it, which leaves $PWD under a home the other account cannot traverse
+# (0750). :A resolves it back — a no-op when the pane never normalised it.
 _agent_sandbox() {
   if [ -n "${WSG_EGRESS:-}" ]; then
-    printf 'sv -x shell "$PWD" -- srt -s %s zsh -lc' "$_agent_srt_settings"
+    printf 'sv -x shell "${PWD:A}" -- srt -s %s zsh -lc' "$_agent_srt_settings"
   else
-    printf 'sv shell "$PWD" -- zsh -lc'
+    printf 'sv shell "${PWD:A}" -- zsh -lc'
   fi
 }
 

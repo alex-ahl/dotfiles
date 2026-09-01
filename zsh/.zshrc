@@ -1,3 +1,17 @@
+# tmux chdirs a pane to the resolved path, so a shell opened in the sandvault
+# share starts at /Users/Shared/sv-$USER/... and the prompt shows all of it.
+# Re-enter the same directory through the ~/git, ~/brain, ~/handoffs symlinks
+# (scripts/sandvault-sync.sh) so it reads ~/git/... — the same ~-relative path
+# on both sides of the sandbox, and what tmux's status line already prints.
+# Must run before the instant prompt below, which renders the first cwd.
+() {
+  [[ -L $HOME/git ]] || return              # not a sandvault machine
+  local share=${${:-$HOME/git}:A:h} logical # /Users/Shared/sv-$USER
+  [[ $PWD == $share/* ]] || return
+  logical=$HOME${PWD#$share}
+  [[ $logical -ef $PWD ]] && cd -q -- $logical
+}
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
