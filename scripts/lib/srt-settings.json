@@ -3,6 +3,8 @@
     "allowedDomains": [
       "*.githubusercontent.com",
       "api.anthropic.com",
+      "platform.claude.com",
+      "claude.ai",
       "api.github.com",
       "files.pythonhosted.org",
       "github.com",
