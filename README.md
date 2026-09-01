@@ -97,6 +97,24 @@ gathers context with expansion-free commands so nothing trips a prompt). This on
 affects Claude sessions **started after** those settings are in place; if a running
 Claude still prompts, its handoff won't finish and that session is left intact.
 
+`agent-relaunch.sh` — respawn the current agent pane with its conversation
+resumed, bound to `prefix + R`. Agent-agnostic: the resume command comes from
+the profile's `agent_continue_cmd` (`claude --continue` for the default). That
+string lives only in the profile, so a pane whose agent exited can't rebuild
+itself, and re-running `wsg` would boot cold. Mainly for approving a domain: srt
+reads its allowlist at startup, so the running pane keeps the old policy until
+it is respawned. Reads the launch context from the session's `@wsg_agent` /
+`@wsg_egress` options — set at scaffold time, because `run-shell` sees the
+server's environment and `sv`'s `env -i` keeps `WSG_*` out of the pane. Sessions
+older than those options are refused rather than relaunched with egress
+filtering silently dropped; stamp one by hand instead of recreating it:
+
+```sh
+S=$(tmux -L wsg display-message -p '#{session_name}')
+tmux -L wsg set-option -t "$S" @wsg_agent claude
+tmux -L wsg set-option -t "$S" @wsg_egress 1   # omit if the session runs unfiltered
+```
+
 `wt-rehome.sh` — start a fresh worktree + wsg session from the current one,
 carrying your in-progress work. Bound to `prefix + M` (prompts for the new
 name). Behaviour depends on the current branch's PR state (`gh pr view`):
@@ -200,8 +218,8 @@ Deliberately: `--control-fd` would hot-swap the allowlist live (the proxy re-rea
 `network.allowedDomains` per request), but it needs a feeder process holding a readable fd for the
 pane's life, which is the runtime protocol a commit-and-relaunch exists to avoid — and srt spawns
 its child with inherited stdio, so a read-write control fd would likely hand the agent the
-self-approval the 644 pin denies it. Relaunching the pane is manual today:
-`agent_continue_cmd` exists in the agent profile for it, but nothing calls it yet.
+self-approval the 644 pin denies it. Relaunching costs one `prefix + R`
+(`agent-relaunch.sh`), which brings the conversation back with it.
 
 A block does return an HTTP 403 — the *proxy's*, not the server's. It answers the CONNECT with
 `403` plus `X-Proxy-Error: blocked-by-allowlist`, so the tunnel never opens: `CONNECT tunnel

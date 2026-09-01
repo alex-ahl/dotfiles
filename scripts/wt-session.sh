@@ -42,6 +42,10 @@ scaffolded=0
 if ! "$TMUX_BIN" -L "$SOCK" has-session -t "$sess" 2>/dev/null; then
   "$TMUX_BIN" -L "$SOCK" new-session -d -s "$sess" -n shell -c "$path"
   "$TMUX_BIN" -L "$SOCK" set-option -t "$sess" @workspace "$sess"
+  # Launch context for agent-relaunch.sh: neither the tmux server env nor the
+  # pane (sv uses env -i) carries WSG_*, so record it where R can read it back.
+  "$TMUX_BIN" -L "$SOCK" set-option -t "$sess" @wsg_agent  "$WSG_AGENT"
+  "$TMUX_BIN" -L "$SOCK" set-option -t "$sess" @wsg_egress "${WSG_EGRESS:-}"
   "$TMUX_BIN" -L "$SOCK" new-window -t "$sess:" -n dev  -c "$path" \
     "zsh -ic 'nvim; exec zsh'"
   for w in $(agent_windows); do

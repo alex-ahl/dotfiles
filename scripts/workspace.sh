@@ -56,6 +56,9 @@ fi
 if ! tm has-session -t "$SESSION" 2>/dev/null; then
   tm new-session -d -s "$SESSION" -n shell -c "$PWD"
   tm set-option -t "$SESSION" @workspace "$WS"
+  # Launch context for agent-relaunch.sh — see wt-session.sh for why.
+  tm set-option -t "$SESSION" @wsg_agent  "$WSG_AGENT"
+  tm set-option -t "$SESSION" @wsg_egress "${WSG_EGRESS:-}"
   tm new-window  -t "$SESSION:" -n dev -c "$PWD" \
     "zsh -ic 'nvim; exec zsh'"
   for w in $(agent_windows); do
