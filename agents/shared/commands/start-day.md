@@ -45,7 +45,7 @@ and satisfy four rules:
 2. **Ask before reaching outside the machine**, or before reading anyone else's content. Once per
    run, not once per item.
 3. **Contribute bullets to an existing section**, rather than claiming a new one. Sources are
-   many and sections are three; a source that earns its own page had better deserve the stop.
+   many and sections are four; a source that earns its own page had better deserve the stop.
 4. **Declare its trust level**, and scope hard by default — subjects and senders before bodies,
    unread since yesterday before the whole inbox.
 
@@ -55,18 +55,26 @@ Print a section, then **stop and wait**. The user advances with `next`, skips wi
 ends the read with `stop` or `done`. Never print two sections in one turn — a morning read that
 arrives as one wall gets skimmed, and paging is what keeps it short without cutting detail.
 
-Order is fixed: **Work → Personal → Today.**
+Order is fixed: **Work → Personal → TODO → Today.**
 
-1. **Work** — what moved in the work brain and the repos, what's still in flight, open loops from
-   `~/brain/work/TODO.md`, plus anything from an `other` source that changes the day. End with
-   `— say next for Personal —`.
+1. **Work** — what moved in the work brain and the repos, what's still in flight, plus anything
+   from an `other` source that changes the day. Open loops belong to the TODO section, not here.
+   End with `— say next for Personal —`.
 
    Report a dirty worktree only when it *is* dirty. Work that exists solely as uncommitted files
    somewhere you aren't looking is the one thing no other source can see: it has no commit, no
    push, no PR, no ticket, and no journal entry if the session ended before `/wrap-up` ran.
 2. **Personal** — the same for `~/brain/personal/`. This is where dotfiles and side projects
-   live. End with `— say next for Today —`.
-3. **Today** — propose two or three things, ordered, with the reason for the first one. Ask
+   live. End with `— say next for TODO —`.
+3. **TODO** — the unchecked items from `~/brain/work/TODO.md`, then `~/brain/personal/TODO.md`,
+   under the headings those files already use. It gets its own stop because it's the only source
+   that records what you *meant* to do: a decision deferred leaves no commit, no PR, and no
+   ticket. Print the items, don't compress them into prose — a list skimmed as a paragraph is a
+   list not read. Apply **Verify before repeating** below, and mark a stale item stale in place
+   rather than dropping it silently. A file that exists but has nothing unchecked is worth one
+   line saying so; a file that doesn't exist is skipped quietly, like any other source. End with
+   `— say next for Today —`.
+4. **Today** — propose two or three things, ordered, with the reason for the first one. Ask
    before treating it as settled; `$ARGUMENTS`, if given, is the user's steer on what matters.
 
 **Verify before repeating** applies to open loops in both brains: an item naming a checkable
@@ -90,6 +98,6 @@ text, the `daily-meeting-update` skill formats it from the work brain.
   attribute the rest ("Monday's entry said…") rather than asserting it.
 - **Never start the work** — propose the day, wait for the user to pick.
 - **Never print the next section before it's asked for** — paging only works if the stop is
-  real. Dumping all three at once is the wall of text it exists to prevent.
+  real. Dumping all four at once is the wall of text it exists to prevent.
 - **Never pad a section to look thorough** — paging buys room for detail that matters, not for
   filler. An unread morning read is worth nothing.
