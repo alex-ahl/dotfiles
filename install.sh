@@ -18,7 +18,21 @@ git submodule update --init --recursive
 # Existing real dirs (e.g. ~/.claude) are descended into; missing dirs (e.g.
 # ~/.config/nvim) are folded into a single dir symlink.
 stow -t "$HOME" \
-  zsh git ssh harlequin docker ghostty tmux karabiner worktrunk sol nvim
+  zsh git ssh harlequin docker ghostty tmux karabiner worktrunk nvim
+
+# Sol separately. It rewrites config.json by atomic replace, so the stow symlink
+# becomes a real file within seconds of launch — which is why a plain stow here
+# aborts on a conflict. mkdir first: without an existing dir stow folds the whole
+# of ~/.config/sol, and Sol keeps real state there (mmkv, state.json) that has no
+# business in the repo. --adopt takes the app's file back and restores the link.
+# skip-worktree then keeps Sol's history/frequencies churn out of git status —
+# the committed copy is a settings seed for a fresh machine, not a live mirror.
+# To capture a setting change deliberately:
+#   git update-index --no-skip-worktree sol/.config/sol/config.json
+#   git add -p && git update-index --skip-worktree sol/.config/sol/config.json
+mkdir -p "$HOME/.config/sol"
+stow --adopt -t "$HOME" sol
+git update-index --skip-worktree sol/.config/sol/config.json
 
 # ssh refuses a group- or world-writable config, and umask 002 (see zsh/.zshenv)
 # makes a checkout produce 664. Pin it — 640 still lets the sandbox read it.
