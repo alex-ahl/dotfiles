@@ -17,8 +17,8 @@ Agent-neutral slash-command sources live in `agents/shared/commands/` and the sk
 
 # 2. Clone + install. install.sh runs `brew bundle` (taps, formulae, casks,
 #    including stow), inits the nvim submodule, and stows everything.
-git clone --recurse-submodules git@github.com:<you>/dotfiles.git ~/git/dotfiles
-cd ~/git/dotfiles
+git clone --recurse-submodules git@github.com:<you>/dotfiles.git ~/.config/dotfiles
+cd ~/.config/dotfiles
 ./install.sh          # set NO_BREW=1 to skip the brew bundle step
 exec zsh
 ```
@@ -43,11 +43,11 @@ The `Brewfile` lists all taps, formulae, casks, and Mac App Store apps. Refresh 
 installing/removing packages, then commit:
 
 ```sh
-brew bundle dump --file=~/git/dotfiles/Brewfile --force --describe
+brew bundle dump --file=~/.config/dotfiles/Brewfile --force --describe
 ```
 
-Install/upgrade from it: `brew bundle --file=~/git/dotfiles/Brewfile`.
-Remove anything not in the Brewfile: `brew bundle cleanup --file=~/git/dotfiles/Brewfile`.
+Install/upgrade from it: `brew bundle --file=~/.config/dotfiles/Brewfile`.
+Remove anything not in the Brewfile: `brew bundle cleanup --file=~/.config/dotfiles/Brewfile`.
 
 ## What's tracked
 
@@ -68,6 +68,9 @@ Remove anything not in the Brewfile: `brew bundle cleanup --file=~/git/dotfiles/
 | `scripts`  | `~/.scripts` (symlinked dir, on PATH-style use)             |
 
 ## Scripts (`~/.scripts`)
+
+On the host, a symlink to this repo's `scripts/`. Inside the sandbox, a symlink to the deployed
+copy — see "Where this repo lives".
 
 `clone-bare.sh`, `check-worktrees.sh`, and the ghostty/tmux workspace helpers
 (`start-tmux.sh`, `workspace.sh`, `wt-session.sh`, `kill-session.sh`, `git-status.sh`).
@@ -186,6 +189,37 @@ Without the file, `gh` is unauthenticated inside the sandbox and `/start-day` ru
 `GH_OWNER_PERSONAL` is the easy one to forget, and it fails confusingly — personal-repo lookups
 route to the work token and come back as `Could not resolve to a Repository`.
 
+## Where this repo lives (`~/.config/dotfiles`)
+
+Private to `$USER`, not in the sandvault share. `/Users/$USER` is `0750`, so the sandbox account
+cannot traverse it at all — which means nothing the host executes is writable by the agent.
+
+That matters because *everything* here is host-executed: `~/.zshenv` is sourced by every host
+shell, `tmux.conf` binds keys that `run-shell` as you, and `status-right` runs `agent-badge.sh`
+and `git-status.sh` on every refresh — unattended, no keystroke. While the repo sat in the share
+those were all group-writable by `sandvault-$USER`, so a single agent write became host execution
+within seconds. Sandvault's separate UID is the boundary POSIX enforces; putting the host's own
+execution surface inside the shared tree handed it back.
+
+The sandbox still needs three things from here, so `install.sh` deploys them outward as **copies,
+never symlinks** — an agent write in the share must not reach anything the host runs:
+
+| deployed to | what | read by |
+| --- | --- | --- |
+| `/Users/Shared/$USER-policy/srt-settings.json` | the egress allowlist | srt, as `sandvault-$USER` |
+| `/Users/Shared/sv-$USER/agent-runtime/scripts` | the sandbox's `~/.scripts` | skills (`repo-resolve.sh` et al) |
+| `/Users/Shared/sv-$USER/agent-runtime/agents` | skills, commands, `settings.json` | Claude, inside the sandbox |
+
+`sandvault-sync.sh` wires the sandbox home to that `agent-runtime` dir; the host keeps stowing straight from
+the repo. The cost is a deploy step: **editing a skill or a script needs `./install.sh` before the
+sandbox sees it.** The trade is deliberate — live edits were the escalation path.
+
+Working on this repo therefore happens on the host. The workspace picker (`prefix + N`) already
+lists `~/.config/*`, so `~/.config/dotfiles` shows up on its own, and `_agent_sandbox`
+(`scripts/agents.d/claude.sh`) launches the agent unsandboxed for any path outside the share —
+`sv shell` would fail there anyway, since the sandbox cannot reach it. `agent-badge.sh` labels such
+a pane `host`, which is the honest signal: that agent has your keys and your `gh` token.
+
 ## Egress filtering (`WSG_EGRESS`)
 
 Sandvault bounds the filesystem but not the network, so the sandbox has unrestricted outbound by
@@ -204,13 +238,20 @@ It runs under `sv -x`, because seatbelt doesn't nest: srt is `sandbox-exec` too,
 profile has to be off for srt's to apply. Sandvault still supplies the separate UID, which is the
 boundary POSIX enforces; srt supplies the policy.
 
-Adding a domain is deliberately yours — `install.sh` pins the settings file to 644 so the sandbox
-reads the allowlist but cannot extend it. When the agent reports a blocked host, add it and commit,
-so the allowlist's history *is* the approval record:
+Adding a domain is deliberately yours. srt does not read this repo — `install.sh` deploys the
+settings file to `/Users/Shared/$USER-policy/`, owned by you and 644. That directory sits outside
+the sandvault share, so `sv -r`'s ACL walk never re-grants the sandbox group write on it, and
+`/Users/Shared` is sticky, so the sandbox account cannot replace it either. A 644 pin *inside* the
+share bought nothing: the parent directory was group-writable, so the file could be replaced
+wholesale, and any checkout under `umask 002` reset the mode anyway.
+
+When the agent reports a blocked host, add it, commit, and re-run `install.sh` — the commit is the
+approval record, the deploy is what srt actually reads:
 
 ```sh
 jq '.network.allowedDomains |= (. + ["example.com"] | unique)' \
   scripts/lib/srt-settings.json > /tmp/s && mv /tmp/s scripts/lib/srt-settings.json
+./install.sh
 ```
 
 srt reads its settings once at startup, so a new domain applies to the next pane, not a running one.
@@ -228,6 +269,11 @@ inside an established connection, as the answer to the request itself. `srt -s
 scripts/lib/srt-settings.json --debug <cmd>` names the refused host (`--debug` just sets
 `SRT_DEBUG`, which is the only thing that makes srt log at all — and it logs to stderr, shared with
 the sandboxed child).
+
+`filesystem.denyWrite` carries one entry, `**/.zshenv`. srt's built-in protected list covers
+`.zshrc`, `.zprofile` and `.profile` but not `.zshenv` — the one rc file *every* `zsh -c` sources,
+including the non-interactive ones srt itself spawns. Spelled as a glob to match how srt writes its
+own rules, so it covers `~/.zshenv` and this repo's stowed `zsh/.zshenv` alike.
 
 Two settings are load-bearing and non-obvious: `allowPty` (without it a TUI can't enter raw mode
 and mouse movement types escape sequences) and `enableWeakerNetworkIsolation` (Go binaries verify

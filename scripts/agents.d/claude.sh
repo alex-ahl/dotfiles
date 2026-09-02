@@ -9,20 +9,34 @@ _agent_env() { case "$1" in
     ai-2) printf 'CLAUDE_CONFIG_DIR=\\$HOME/.claude-account2 ' ;;
   esac; }
 
-# Resolved here, not left as \$HOME: srt's -s is plain argv, so no shell expands
-# it. -P so the path is the physical one both accounts see.
-_agent_srt_settings="$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd -P)/srt-settings.json"
+# Deployed by install.sh, deliberately outside this repo and outside the share:
+# srt reads it as sandvault-$USER, which cannot see /Users/$USER, and anything
+# under the share is group-writable by that account (sv re-grants it on every
+# rebuild). Plain argv — srt's -s is not shell-expanded, so no \$HOME here.
+_agent_user="${USER:-$(id -un)}"
+_agent_srt_settings="/Users/Shared/$_agent_user-policy/srt-settings.json"
+_agent_share="/Users/Shared/sv-$_agent_user"
 
 # Sandbox invocation, up to and including `zsh -lc`. Default is sandvault alone.
-# WSG_EGRESS=1 adds srt's domain allowlist (scripts/lib/srt-settings.json), which
-# needs `sv -x`: seatbelt does not nest and srt is itself sandbox-exec, so this
-# gives one seatbelt each — sandvault the separate UID, srt the policy.
+# WSG_EGRESS=1 adds srt's domain allowlist (source: scripts/lib/srt-settings.json,
+# deployed to the path above by install.sh). It needs `sv -x`: seatbelt does not
+# nest and srt is itself sandbox-exec, so this gives one seatbelt each —
+# sandvault the separate UID, srt the policy.
 # srt must wrap zsh, never `srt -c '<string>'`: that runs bash, which skips
 # .zshenv, so the gh token router's function would not exist (see lib/gh-token.sh).
 # ${PWD:A}, not $PWD: .zshrc re-enters the share through ~/git so the prompt can
 # shorten it, which leaves $PWD under a home the other account cannot traverse
 # (0750). :A resolves it back — a no-op when the pane never normalised it.
+# Outside the share the sandbox account cannot traverse the path at all — this
+# repo now lives under /Users/$USER (0750) — so `sv shell` would fail. Launch on
+# the host instead; agent-badge.sh labels the pane "host" on its own.
+# WSG_CWD: agent-relaunch.sh runs from tmux's cwd, not the pane's, so it says
+# which path the pane is for.
 _agent_sandbox() {
+  case "$(cd "${WSG_CWD:-$PWD}" 2>/dev/null && pwd -P)" in
+    "$_agent_share"/*) ;;
+    *) printf 'zsh -lc'; return ;;
+  esac
   if [ -n "${WSG_EGRESS:-}" ]; then
     printf 'sv -x shell "${PWD:A}" -- srt -s %s zsh -lc' "$_agent_srt_settings"
   else

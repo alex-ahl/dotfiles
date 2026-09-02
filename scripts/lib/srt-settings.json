@@ -34,7 +34,9 @@
       "/private/tmp",
       "/tmp"
     ],
-    "denyWrite": []
+    "denyWrite": [
+      "**/.zshenv"
+    ]
   },
   "enableWeakerNetworkIsolation": true,
   "allowPty": true

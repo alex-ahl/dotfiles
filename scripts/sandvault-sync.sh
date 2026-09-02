@@ -6,23 +6,26 @@
 # BOTH sides, so a ~/-relative path in a skill resolves to the same file inside
 # the sandbox and out. The sandbox cannot see /Users/$USER at all.
 #
-# Fresh machine, in order — the repo must sit inside the share, which only
-# exists after `sv build`:
+# The repo itself is private to $USER, where the sandbox cannot reach it.
+# install.sh deploys the parts the sandbox needs to $SHARE/agent-runtime; this
+# script wires the sandbox home to that copy.
+#
+# Fresh machine, in order — the share only exists after `sv build`:
 #   brew bundle
 #   sv build
-#   git clone <dotfiles> /Users/Shared/sv-$USER/git/dotfiles
+#   git clone <dotfiles> ~/.config/dotfiles && ~/.config/dotfiles/install.sh
 #   scripts/sandvault-sync.sh
 #   sv shell, then create $SHARE/user/.zshenv — gh tokens (README, "Not tracked")
 set -Eeuo pipefail
 
 SHARE="/Users/Shared/sv-$USER"
 SBHOME="/Users/sandvault-$USER"
-REPO="$(cd "$(dirname "$0")/.." && pwd -P)"   # -P: reached via the ~/git symlink
+RUNTIME="$SHARE/agent-runtime"                # deployed by install.sh
 DIRS=(git brain handoffs)
 
 command -v sv >/dev/null || { echo "sandvault not installed — brew bundle" >&2; exit 1; }
 [ -d "$SHARE" ] || { echo "no $SHARE — run: sv build" >&2; exit 1; }
-case "$REPO" in "$SHARE"/*) ;; *) echo "repo is outside $SHARE — the sandbox can't read it" >&2; exit 1 ;; esac
+[ -d "$RUNTIME" ] || { echo "no $RUNTIME — run install.sh from the dotfiles repo first" >&2; exit 1; }
 
 # A real dir at ~/<name> is refused, not replaced: `ln -sfn` nests inside it.
 for d in "${DIRS[@]}"; do
@@ -39,16 +42,17 @@ for d in "${DIRS[@]}"; do
   sv shell -- ln -sfn "$SHARE/$d" "$SBHOME/$d"
 done
 
-# install.sh keys off $HOME, so running it inside links the sandbox's config
-# dirs to the shared repo — skill edits stay live. settings.json arrives via
-# stow on the host, so it needs linking separately.
+# agents/install.sh keys off $HOME, so running it inside links the sandbox's
+# config dirs to the deployed runtime. settings.json arrives via stow on the
+# host, so it needs linking separately.
 # ~/.scripts is how the skills reach repo-resolve.sh et al; the host gets it
-# from install.sh, the sandbox needs its own.
-sv shell -- ln -sfn "$REPO/scripts" "$SBHOME/.scripts"
+# from install.sh pointing at the repo, the sandbox gets the deployed copy.
+# Deployed, not live: an edit here reaches the sandbox on the next install.sh.
+sv shell -- ln -sfn "$RUNTIME/scripts" "$SBHOME/.scripts"
 
-sv shell -- bash "$REPO/agents/install.sh"
+sv shell -- bash "$RUNTIME/agents/install.sh"
 for a in 1 2; do
-  sv shell -- ln -sfn "$REPO/agents/claude/.claude-account$a/settings.json" \
+  sv shell -- ln -sfn "$RUNTIME/agents/claude/.claude-account$a/settings.json" \
                       "$SBHOME/.claude-account$a/settings.json"
 done
 

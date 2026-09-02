@@ -24,10 +24,6 @@ stow -t "$HOME" \
 # makes a checkout produce 664. Pin it — 640 still lets the sandbox read it.
 chmod 640 "$PWD/ssh/.ssh/config"
 
-# The egress allowlist is the user's to extend, so the sandbox account reads it
-# but must not write it — otherwise an agent can approve its own domains.
-chmod 644 "$PWD/scripts/lib/srt-settings.json"
-
 # Agent configs live under agents/ so multiple agents (claude, opencode, ...)
 # can be sibling packages. Stow with agents/ as the stow dir, so e.g.
 # agents/claude/.claude-account1/ maps to ~/.claude-account1/.
@@ -39,5 +35,27 @@ ln -sfn "$PWD/scripts" "$HOME/.scripts"
 # Link shared agent commands + skills into each agent's config dirs.
 # Not stow — targets live inside runtime dirs.
 "$PWD/agents/install.sh"
+
+# This repo is private to $USER; the sandbox account cannot read /Users/$USER.
+# What it needs is deployed outward as copies — copies, not symlinks, so an
+# agent write in the share never reaches anything the host runs. Re-run
+# install.sh to publish an edit.
+SHARE="/Users/Shared/sv-$USER"
+if [ -d "$SHARE" ]; then
+  # srt reads the allowlist as sandvault-$USER, so it cannot live in this repo.
+  # Kept outside $SHARE, where `sv -r`'s ACL walk never reaches it; /Users/Shared
+  # is sticky, so only this account can replace the dir.
+  POLICY="/Users/Shared/$USER-policy"
+  mkdir -p "$POLICY"
+  chmod 755 "$POLICY"
+  install -m 644 "$PWD/scripts/lib/srt-settings.json" "$POLICY/srt-settings.json"
+
+  # The sandbox's ~/.scripts, skills, commands and agent settings.
+  # sandvault-sync.sh wires the sandbox home to this copy.
+  RUNTIME="$SHARE/agent-runtime"
+  mkdir -p "$RUNTIME"
+  rsync -a --delete --exclude .git "$PWD/scripts/" "$RUNTIME/scripts/"
+  rsync -a --delete --exclude .git "$PWD/agents/"  "$RUNTIME/agents/"
+fi
 
 echo "dotfiles installed. Restart your shell (or: exec zsh)."

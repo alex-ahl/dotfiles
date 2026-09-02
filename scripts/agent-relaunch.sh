@@ -32,7 +32,11 @@ sess="$(tmux display-message -p -t "$pane" '#{session_name}')"
 WSG_AGENT="$(tmux show-options -qv -t "$sess" @wsg_agent || true)"
 [ -n "$WSG_AGENT" ] || { _msg "session predates @wsg_agent — stamp it (see README) or recreate with wsg"; exit 0; }
 WSG_EGRESS="$(tmux show-options -qv -t "$sess" @wsg_egress || true)"
-export WSG_AGENT WSG_EGRESS
+
+# The profile decides sandboxed vs host from the pane's path, and run-shell's
+# cwd is tmux's, not the pane's — so hand it over explicitly.
+WSG_CWD="$path"
+export WSG_AGENT WSG_EGRESS WSG_CWD
 
 . "$(dirname "$0")/lib/agent.sh"
 
