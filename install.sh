@@ -66,10 +66,13 @@ if [ -d "$SHARE" ]; then
 
   # The sandbox's ~/.scripts, skills, commands and agent settings.
   # sandvault-sync.sh wires the sandbox home to this copy.
+  # Rebuilt from scratch each run: --delete only prunes inside a synced subtree,
+  # so anything deployed by an older layout would linger here forever.
   RUNTIME="$SHARE/agent-runtime"
-  mkdir -p "$RUNTIME"
-  rsync -a --delete --exclude .git "$PWD/scripts/" "$RUNTIME/scripts/"
-  rsync -a --delete --exclude .git "$PWD/agents/"  "$RUNTIME/agents/"
+  rm -rf "$RUNTIME"
+  mkdir -p "$RUNTIME/scripts"
+  rsync -a --exclude .git "$PWD/scripts/shared/" "$RUNTIME/scripts/shared/"
+  rsync -a --exclude .git "$PWD/agents/"         "$RUNTIME/agents/"
 fi
 
 echo "dotfiles installed. Restart your shell (or: exec zsh)."

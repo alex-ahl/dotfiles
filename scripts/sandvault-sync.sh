@@ -45,7 +45,7 @@ done
 # agents/install.sh keys off $HOME, so running it inside links the sandbox's
 # config dirs to the deployed runtime. settings.json arrives via stow on the
 # host, so it needs linking separately.
-# ~/.scripts is how the skills reach repo-resolve.sh et al; the host gets it
+# ~/.scripts is how the skills reach shared/repo-resolve.sh et al; the host gets it
 # from install.sh pointing at the repo, the sandbox gets the deployed copy.
 # Deployed, not live: an edit here reaches the sandbox on the next install.sh.
 sv shell -- ln -sfn "$RUNTIME/scripts" "$SBHOME/.scripts"

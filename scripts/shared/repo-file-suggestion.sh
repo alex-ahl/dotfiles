@@ -11,7 +11,7 @@
 set -Eeuo pipefail
 
 LIMIT=15
-RESOLVE="$HOME/.scripts/repo-resolve.sh"
+RESOLVE="$(dirname "$0")/repo-resolve.sh"
 PROJ="${CLAUDE_PROJECT_DIR:-$PWD}"
 
 # Query from stdin JSON (jq if present, else python3 fallback).

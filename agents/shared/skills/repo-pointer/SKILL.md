@@ -14,10 +14,10 @@ Turn a short repo name into a concrete path to read and search.
    e.g. `repo-resolve billing-api caching-otel`:
 
    ```
-   ~/.scripts/repo-resolve.sh <name> [worktree]
+   ~/.scripts/shared/repo-resolve.sh <name> [worktree]
    ```
 
-   To see a repo's worktrees: `~/.scripts/repo-resolve.sh --worktrees <name>`.
+   To see a repo's worktrees: `~/.scripts/shared/repo-resolve.sh --worktrees <name>`.
 
 2. Act on the exit code:
    - **0** — stdout is the absolute path. Announce it ("Looking in `<path>`.") and use it as the base for every file read, search, and command for this task. If access outside the current directory is refused or keeps asking, say so — the path has to be added to the working directories once, and the user is the one who can do it.

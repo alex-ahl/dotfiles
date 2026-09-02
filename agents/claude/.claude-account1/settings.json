@@ -1,7 +1,7 @@
 {
   "fileSuggestion": {
     "type": "command",
-    "command": "/Users/alex/.scripts/repo-file-suggestion.sh"
+    "command": "$HOME/.scripts/shared/repo-file-suggestion.sh"
   },
   "permissions": {
     "allow": [

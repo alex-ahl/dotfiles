@@ -176,7 +176,7 @@ Sandvault sources it into every sandbox shell. A fine-grained PAT covers one res
     export GH_TOKEN_PERSONAL=''        # resource owner: your own account
     export GH_OWNER_PERSONAL=''        # your login: gh api /user --jq .login
     export GH_TOKEN="$GH_TOKEN_WORK"   # default for bash scripts, which skip the function
-    source ~/.scripts/lib/gh-token.sh  # routes gh by the target repo's owner
+    source ~/.scripts/shared/gh-token.sh  # routes gh by the target repo's owner
     umask 002                          # see below
 
 `umask 002` matters on both sides: the share is co-owned by this account and `sandvault-$USER`
@@ -207,8 +207,12 @@ never symlinks** — an agent write in the share must not reach anything the hos
 | deployed to | what | read by |
 | --- | --- | --- |
 | `/Users/Shared/$USER-policy/srt-settings.json` | the egress allowlist | srt, as `sandvault-$USER` |
-| `/Users/Shared/sv-$USER/agent-runtime/scripts` | the sandbox's `~/.scripts` | skills (`repo-resolve.sh` et al) |
+| `/Users/Shared/sv-$USER/agent-runtime/scripts/shared` | the three scripts the sandbox calls | `repo-pointer`, `fileSuggestion`, the gh router |
 | `/Users/Shared/sv-$USER/agent-runtime/agents` | skills, commands, `settings.json` | Claude, inside the sandbox |
+
+`scripts/shared/` is the boundary: only what the sandbox actually calls lives there, and only that is
+deployed — the rest of `scripts/` is host-only tmux tooling with no business in the share. The relative
+path is identical on both sides (`~/.scripts/shared/…`), so one `settings.json` works for both.
 
 `sandvault-sync.sh` wires the sandbox home to that `agent-runtime` dir; the host keeps stowing straight from
 the repo. The cost is a deploy step: **editing a skill or a script needs `./install.sh` before the
@@ -259,7 +263,7 @@ Deliberately: `--control-fd` would hot-swap the allowlist live (the proxy re-rea
 `network.allowedDomains` per request), but it needs a feeder process holding a readable fd for the
 pane's life, which is the runtime protocol a commit-and-relaunch exists to avoid — and srt spawns
 its child with inherited stdio, so a read-write control fd would likely hand the agent the
-self-approval the 644 pin denies it. Relaunching costs one `prefix + R`
+self-approval the deployed copy denies it. Relaunching costs one `prefix + R`
 (`agent-relaunch.sh`), which brings the conversation back with it.
 
 A block does return an HTTP 403 — the *proxy's*, not the server's. It answers the CONNECT with

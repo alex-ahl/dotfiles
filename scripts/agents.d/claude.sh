@@ -23,7 +23,7 @@ _agent_share="/Users/Shared/sv-$_agent_user"
 # nest and srt is itself sandbox-exec, so this gives one seatbelt each —
 # sandvault the separate UID, srt the policy.
 # srt must wrap zsh, never `srt -c '<string>'`: that runs bash, which skips
-# .zshenv, so the gh token router's function would not exist (see lib/gh-token.sh).
+# .zshenv, so the gh token router's function would not exist (see shared/gh-token.sh).
 # ${PWD:A}, not $PWD: .zshrc re-enters the share through ~/git so the prompt can
 # shorten it, which leaves $PWD under a home the other account cannot traverse
 # (0750). :A resolves it back — a no-op when the pane never normalised it.
