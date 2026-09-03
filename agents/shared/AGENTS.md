@@ -35,8 +35,12 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   commands under `~/.claude-account*/` are deployed copies; the source is a
   host-only repo you cannot see. Editing an existing one appears to work and is
   silently reverted by the next `install.sh`; adding a new one appears to do
-  nothing. Neither leaves a trace. If a change is needed there, say so and ask
-  me to run a host agent — don't patch the copy.
+  nothing. Neither leaves a trace. If a change is needed there, don't patch the
+  copy — write the proposed content to `~/handoffs/<slug>.md` (shared, the host
+  account reads it) and hand me a paste-ready instruction naming the source
+  path. Deployed → source: `~/.claude-account*/skills|commands/…` →
+  `agents/shared/…`, `CLAUDE.md` → `agents/shared/AGENTS.md`,
+  `~/.scripts/shared/…` → `scripts/shared/…`.
 
 - **Don't prefix shell commands with `cd <dir> &&` or `git -C <dir>` when already
   working in that repo** — run git and other tools in the current working
