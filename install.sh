@@ -5,8 +5,17 @@ cd "$(dirname "$0")"
 
 # Install Homebrew packages from the Brewfile (skip with NO_BREW=1); this also
 # installs stow itself. Idempotent.
+#
+# --no-upgrade: install what is missing, leave installed versions where they are.
+# A formula has one version stream, so an upgrade here can be a major bump nobody
+# asked for as a side effect of stowing dotfiles — node especially, which srt is
+# installed under globally. Upgrade deliberately: `brew bundle --file=...`.
+#
+# Non-fatal: set -e made a single cask that fails to upgrade veto everything
+# below it — the stow and the sandbox deploy, which are the part that matters.
 if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
-  brew bundle --file="$PWD/Brewfile"
+  brew bundle --no-upgrade --file="$PWD/Brewfile" \
+    || echo "brew bundle failed — continuing with stow + deploy" >&2
 fi
 
 command -v stow >/dev/null || { echo "stow not found — run: brew install stow" >&2; exit 1; }
