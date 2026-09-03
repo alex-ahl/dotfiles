@@ -31,6 +31,13 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   for the relaunch (`prefix + R`) rather than reading the same 403 as a new
   failure.
 
+- **Dotfiles live outside the sandbox.** `~/.scripts/*` and the skills and
+  commands under `~/.claude-account*/` are deployed copies; the source is a
+  host-only repo you cannot see. Editing an existing one appears to work and is
+  silently reverted by the next `install.sh`; adding a new one appears to do
+  nothing. Neither leaves a trace. If a change is needed there, say so and ask
+  me to run a host agent — don't patch the copy.
+
 - **Don't prefix shell commands with `cd <dir> &&` or `git -C <dir>` when already
   working in that repo** — run git and other tools in the current working
   directory (the shell cwd persists), so they match the read-only allowlist
