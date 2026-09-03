@@ -1,4 +1,3 @@
-tap "anomalyco/tap"
 tap "hashicorp/tap"
 tap "homebrew/services"
 tap "isen-ng/dotnet-sdk-versions"
@@ -70,8 +69,6 @@ brew "unbound"
 brew "wget"
 # CLI for Git worktree management, designed for parallel AI agent workflows
 brew "worktrunk"
-# The AI coding agent built for the terminal.
-brew "anomalyco/tap/opencode"
 # Terraform
 brew "hashicorp/tap/terraform"
 # Incredibly fast JavaScript runtime, bundler, transpiler and package manager - all in one.
