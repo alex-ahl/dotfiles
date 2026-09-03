@@ -40,7 +40,9 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   account reads it) and hand me a paste-ready instruction naming the source
   path. Deployed → source: `~/.claude-account*/skills|commands/…` →
   `agents/shared/…`, `CLAUDE.md` → `agents/shared/AGENTS.md`,
-  `~/.scripts/shared/…` → `scripts/shared/…`.
+  `~/.scripts/shared/…` → `scripts/shared/…`. Have it end with `./install.sh`
+  from the repo root — `agents/install.sh` only relinks the host account and
+  leaves this copy stale.
 
 - **Don't prefix shell commands with `cd <dir> &&` or `git -C <dir>` when already
   working in that repo** — run git and other tools in the current working
