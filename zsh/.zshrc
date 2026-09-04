@@ -125,7 +125,6 @@ alias ns="pnpm start | jjq"
 alias jsontidy="pbpaste | jq '.' | pbcopy"
 alias claude1='CLAUDE_CONFIG_DIR=~/.claude-account1 claude'
 alias claude2='CLAUDE_CONFIG_DIR=~/.claude-account2 claude'
-alias ws=~/git/scripts/workspace.sh
 alias wsg=~/.scripts/workspace.sh
 alias wsg-ls='tmux -L wsg ls -F "#S"'
 alias wsg-pick='tmux -L wsg attach -t "$(tmux -L wsg ls -F "#S" | fzf)"'

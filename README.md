@@ -165,7 +165,9 @@ live sessions both wait until the habit has run for a while and the entry shape 
 `~/.npmrc` (auth token), cloud/AI creds (`gcloud`, `gh`, `.codex`, `.gemini`, NuGet),
 all `.claude` runtime state (sessions, projects, cache, history, `.claude.json`,
 credentials), `.config/zellij`, `.config/opencode`, sol binary state, and the legacy
-iTerm2 `~/git/scripts/workspace.sh`.
+iTerm2 `~/git/scripts/workspace.sh` — unreferenced since the `ws` alias went. It lives in the
+share, so the sandbox can rewrite it; anything there that the host executes is an escape, which
+is why nothing in this repo points at it any more.
 
 **Sandbox `gh` tokens** — `/Users/Shared/sv-$USER/user/.zshenv`. Outside the repo, and created
 from inside `sv shell`: that directory is owned by the sandbox user, so the host can't write it.
