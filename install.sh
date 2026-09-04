@@ -66,8 +66,7 @@ if [ -d "$SHARE" ]; then
   # Kept outside $SHARE, where `sv -r`'s ACL walk never reaches it; /Users/Shared
   # is sticky, so only this account can replace the dir.
   POLICY="/Users/Shared/$USER-policy"
-  mkdir -p "$POLICY"
-  chmod 755 "$POLICY"
+  install -d -m 755 "$POLICY"
   install -m 644 "$PWD/scripts/lib/srt-settings.json" "$POLICY/srt-settings.json"
 
   # The sandbox's ~/.scripts, skills, commands and agent settings.
@@ -79,6 +78,10 @@ if [ -d "$SHARE" ]; then
   mkdir -p "$RUNTIME/scripts"
   rsync -a --exclude .git "$PWD/scripts/shared/" "$RUNTIME/scripts/shared/"
   rsync -a --exclude .git "$PWD/agents/"         "$RUNTIME/agents/"
+else
+  # Not an error on a fresh machine — the share only exists after `sv build`.
+  # Said out loud because a silent skip and a working deploy look identical.
+  echo "no $SHARE — skipped the sandbox deploy (run: sv build)" >&2
 fi
 
 echo "dotfiles installed. Restart your shell (or: exec zsh)."
