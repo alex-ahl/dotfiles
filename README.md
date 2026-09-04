@@ -72,6 +72,10 @@ Remove anything not in the Brewfile: `brew bundle cleanup --file=~/.config/dotfi
 On the host, a symlink to this repo's `scripts/`. Inside the sandbox, a symlink to the deployed
 copy — see "Where this repo lives".
 
+`deploy-runtime.sh` — publish the srt policy and the `agent-runtime` copy to the share, without
+the brew + stow half of `install.sh`. Run it after editing a skill, a command, `AGENTS.md`, or
+anything in `scripts/shared/`; then `prefix + R` for a policy change to reach a running pane.
+
 `clone-bare.sh`, `check-worktrees.sh`, and the ghostty/tmux workspace helpers
 (`start-tmux.sh`, `workspace.sh`, `wt-session.sh`, `kill-session.sh`, `git-status.sh`).
 Aliases `wsg`, `cb`, `cwt`, `wtp` (in `.zshrc`) point here.
@@ -228,8 +232,10 @@ deployed — the rest of `scripts/` is host-only tmux tooling with no business i
 path is identical on both sides (`~/.scripts/shared/…`), so one `settings.json` works for both.
 
 `sandvault-sync.sh` wires the sandbox home to that `agent-runtime` dir; the host keeps stowing straight from
-the repo. The cost is a deploy step: **editing or adding a skill or a script needs `./install.sh`
-before the sandbox sees it.** The trade is deliberate — live edits were the escalation path.
+the repo. The cost is a deploy step: **editing or adding a skill or a script needs
+`scripts/deploy-runtime.sh` before the sandbox sees it** (`./install.sh` calls it too, but also
+restows `$HOME` and runs brew, which a publish has no business doing). The trade is deliberate —
+live edits were the escalation path.
 
 Working on this repo therefore happens on the host. The workspace picker (`prefix + N`) already
 lists `~/.config/*`, so `~/.config/dotfiles` shows up on its own, and `_agent_sandbox`

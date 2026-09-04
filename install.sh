@@ -56,32 +56,8 @@ ln -sfn "$PWD/scripts" "$HOME/.scripts"
 # Not stow — targets live inside runtime dirs.
 "$PWD/agents/install.sh"
 
-# This repo is private to $USER; the sandbox account cannot read /Users/$USER.
-# What it needs is deployed outward as copies — copies, not symlinks, so an
-# agent write in the share never reaches anything the host runs. Re-run
-# install.sh to publish an edit.
-SHARE="/Users/Shared/sv-$USER"
-if [ -d "$SHARE" ]; then
-  # srt reads the allowlist as sandvault-$USER, so it cannot live in this repo.
-  # Kept outside $SHARE, where `sv -r`'s ACL walk never reaches it; /Users/Shared
-  # is sticky, so only this account can replace the dir.
-  POLICY="/Users/Shared/$USER-policy"
-  install -d -m 755 "$POLICY"
-  install -m 644 "$PWD/scripts/lib/srt-settings.json" "$POLICY/srt-settings.json"
-
-  # The sandbox's ~/.scripts, skills, commands and agent settings.
-  # sandvault-sync.sh wires the sandbox home to this copy.
-  # Rebuilt from scratch each run: --delete only prunes inside a synced subtree,
-  # so anything deployed by an older layout would linger here forever.
-  RUNTIME="$SHARE/agent-runtime"
-  rm -rf "$RUNTIME"
-  mkdir -p "$RUNTIME/scripts"
-  rsync -a --exclude .git "$PWD/scripts/shared/" "$RUNTIME/scripts/shared/"
-  rsync -a --exclude .git "$PWD/agents/"         "$RUNTIME/agents/"
-else
-  # Not an error on a fresh machine — the share only exists after `sv build`.
-  # Said out loud because a silent skip and a working deploy look identical.
-  echo "no $SHARE — skipped the sandbox deploy (run: sv build)" >&2
-fi
+# Publish what the sandbox needs. Its own script so a skill or shared-script
+# edit can be published without the brew + stow work above.
+"$PWD/scripts/deploy-runtime.sh"
 
 echo "dotfiles installed. Restart your shell (or: exec zsh)."
