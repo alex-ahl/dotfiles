@@ -228,8 +228,8 @@ deployed — the rest of `scripts/` is host-only tmux tooling with no business i
 path is identical on both sides (`~/.scripts/shared/…`), so one `settings.json` works for both.
 
 `sandvault-sync.sh` wires the sandbox home to that `agent-runtime` dir; the host keeps stowing straight from
-the repo. The cost is a deploy step: **editing a skill or a script needs `./install.sh` before the
-sandbox sees it.** The trade is deliberate — live edits were the escalation path.
+the repo. The cost is a deploy step: **editing or adding a skill or a script needs `./install.sh`
+before the sandbox sees it.** The trade is deliberate — live edits were the escalation path.
 
 Working on this repo therefore happens on the host. The workspace picker (`prefix + N`) already
 lists `~/.config/*`, so `~/.config/dotfiles` shows up on its own, and `_agent_sandbox`

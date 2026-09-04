@@ -9,9 +9,9 @@ the README before changing anything under `scripts/` or `agents/`.
 
 - **Nothing here is live for the sandbox.** The sandbox account cannot read
   `/Users/$USER` (0750). It sees deployed *copies* under
-  `/Users/Shared/sv-$USER/agent-runtime/`, rebuilt by `./install.sh`. Edit a skill
-  or a shared script and a sandboxed pane keeps running the old one until then —
-  if a change appears to have no effect, this is why.
+  `/Users/Shared/sv-$USER/agent-runtime/`, rebuilt by `./install.sh`. Edit or add
+  a skill or a shared script and a sandboxed pane keeps running the old one until
+  then — if a change appears to have no effect, this is why.
 
 - **`scripts/shared/` is a boundary, not a folder.** Only what the sandbox calls
   lives there, and only that is deployed: `repo-resolve.sh` (repo-pointer skill),
