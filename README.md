@@ -63,7 +63,7 @@ Remove anything not in the Brewfile: `brew bundle cleanup --file=~/.config/dotfi
 | `karabiner`| `~/.config/karabiner/karabiner.json`                        |
 | `worktrunk`| `~/.config/worktrunk/config.toml`                           |
 | `sol`      | `~/.config/sol/config.json`                                 |
-| `agents/claude` | `settings.json` + `commands/` + `agents/` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`) |
+| `agents/claude` | `settings.json` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`), plus `.claude/agents/`. `commands/`, `skills/` and `CLAUDE.md` are symlinked by `agents/install.sh`, not stowed — and only into the two account dirs, so plain `~/.claude` gets none of them |
 | `nvim`     | `~/.config/nvim` (git submodule → `alex-ahl/nvim`)          |
 | `scripts`  | `~/.scripts` (symlinked dir, on PATH-style use)             |
 
@@ -95,7 +95,7 @@ restored with `/handoff-resume <slug>`. It only triggers `/handoff` and waits �
 injects approvals into a live Claude. For it to run unattended, `/handoff`'s
 steps are allow-listed in the `agents/claude` package's `settings.json`
 (`permissions.allow`: `git status/log/rev-parse`, `ls`, `pwd`, `echo`, and
-`Edit(//…/handoffs/**)` for the file write; the rewritten `~/handoffs/commands/handoff.md`
+`Edit(//…/handoffs/**)` for the file write; the rewritten `agents/shared/commands/handoff.md`
 gathers context with expansion-free commands so nothing trips a prompt). This only
 affects Claude sessions **started after** those settings are in place; if a running
 Claude still prompts, its handoff won't finish and that session is left intact.
@@ -115,7 +115,7 @@ filtering silently dropped; stamp one by hand instead of recreating it:
 ```sh
 S=$(tmux -L wsg display-message -p '#{session_name}')
 tmux -L wsg set-option -t "$S" @wsg_agent claude
-tmux -L wsg set-option -t "$S" @wsg_egress 1   # omit if the session runs unfiltered
+tmux -L wsg set-option -t "$S" @wsg_egress 1   # 0 to run the session unfiltered
 ```
 
 `wt-rehome.sh` — start a fresh worktree + wsg session from the current one,
@@ -165,12 +165,13 @@ live sessions both wait until the habit has run for a while and the entry shape 
 `~/.npmrc` (auth token), cloud/AI creds (`gcloud`, `gh`, `.codex`, `.gemini`, NuGet),
 all `.claude` runtime state (sessions, projects, cache, history, `.claude.json`,
 credentials), `.config/zellij`, `.config/opencode`, sol binary state, and the legacy
-iTerm2 `~/git/scripts/workspace.sh` — unreferenced since the `ws` alias went. It lives in the
-share, so the sandbox can rewrite it; anything there that the host executes is an escape, which
-is why nothing in this repo points at it any more.
+iTerm2 `~/git/scripts/workspace.sh`. Nothing here points at it: it lives in the share, so the
+sandbox can rewrite it, and anything host-executed there is an escape.
 
 **Sandbox `gh` tokens** — `/Users/Shared/sv-$USER/user/.zshenv`. Outside the repo, and created
-from inside `sv shell`: that directory is owned by the sandbox user, so the host can't write it.
+from inside `sv shell`. Owned by the sandbox user — but note the host can read *and* write it
+anyway: the share's inherited ACL grants `group:sandvault-$USER` write, and this account is in that
+group, so the `0600` on it is not the protection it looks like. It holds live PATs.
 Sandvault sources it into every sandbox shell. A fine-grained PAT covers one resource owner, so
 `gh` needs one per owner, both read-only (Issues, Pull requests, Metadata — no Contents):
 
@@ -183,8 +184,7 @@ Sandvault sources it into every sandbox shell. A fine-grained PAT covers one res
 Both accounts can write the share because `sv` applies an inheriting ACL
 (`group:sandvault-$USER allow …write…`) across it, and macOS evaluates ACLs ahead of the mode
 bits. The mode bits there are therefore decorative: a 644 file in the share is still writable by
-the sandbox. This repo used to set `umask 002` on both sides to achieve the same thing; that was
-redundant, and it made every tracked file in the share group-writable for no benefit.
+the sandbox.
 
 The ACL is applied at build time and inherited by anything *created* inside the share afterwards.
 It is not inherited by anything **moved** in — `mv` is a rename and carries the source's ACLs,
@@ -209,10 +209,10 @@ cannot traverse it at all — which means nothing the host executes is writable 
 
 That matters because *everything* here is host-executed: `~/.zshenv` is sourced by every host
 shell, `tmux.conf` binds keys that `run-shell` as you, and `status-right` runs `agent-badge.sh`
-and `git-status.sh` on every refresh — unattended, no keystroke. While the repo sat in the share
-those were all group-writable by `sandvault-$USER`, so a single agent write became host execution
-within seconds. Sandvault's separate UID is the boundary POSIX enforces; putting the host's own
-execution surface inside the shared tree handed it back.
+and `git-status.sh` on every refresh — unattended, no keystroke. Anything host-executed that lives
+in the share is writable by `sandvault-$USER` and therefore an escape: sandvault's separate UID is
+the boundary POSIX enforces, and the host's own execution surface has to stay outside the shared
+tree for it to mean anything.
 
 The sandbox still needs three things from here, so `install.sh` deploys them outward as **copies,
 never symlinks** — an agent write in the share must not reach anything the host runs:
@@ -239,10 +239,15 @@ a pane `host`, which is the honest signal: that agent has your keys and your `gh
 
 ## Egress filtering (`WSG_EGRESS`)
 
-Sandvault bounds the filesystem but not the network, so the sandbox has unrestricted outbound by
-default. `WSG_EGRESS=1` in the environment that launches a session wraps the agent in
-[srt](https://www.npmjs.com/package/@anthropic-ai/sandbox-runtime) with an allow-only domain list
-(`scripts/lib/srt-settings.json`). Unset, panes launch exactly as before.
+Sandvault bounds the filesystem but not the network, so on its own the sandbox has unrestricted
+outbound. Every agent pane is therefore wrapped in
+[srt](https://www.npmjs.com/package/@anthropic-ai/sandbox-runtime) with an allow-only domain list —
+the scaffolders default `WSG_EGRESS` to `1`, and `WSG_EGRESS=0` opts a session out. Sessions
+scaffolded before that default keep their stamp and stay unfiltered until recreated.
+
+srt is not only the allowlist: its `filesystem` rules are what deny writes to `.git/config`,
+`.git/hooks` and the rc files, so a pane running without it loses those too. That is why this is
+on by default rather than opt-in.
 
 Needs srt installed **on the host**, with Homebrew's npm rather than nvm's — nvm installs under
 `~/.nvm`, which the sandbox account can't read:
@@ -258,9 +263,7 @@ boundary POSIX enforces; srt supplies the policy.
 Adding a domain is deliberately yours. srt does not read this repo — `install.sh` deploys the
 settings file to `/Users/Shared/$USER-policy/`, owned by you and 644. That directory sits outside
 the sandvault share, so `sv -r`'s ACL walk never re-grants the sandbox group write on it, and
-`/Users/Shared` is sticky, so the sandbox account cannot replace it either. A 644 pin *inside* the
-share bought nothing: the parent directory was group-writable, so the file could be replaced
-wholesale, and any checkout under `umask 002` reset the mode anyway.
+`/Users/Shared` is sticky, so the sandbox account cannot replace it either.
 
 When the agent reports a blocked host, add it, commit, and re-run `install.sh` — the commit is the
 approval record, the deploy is what srt actually reads:
@@ -287,10 +290,16 @@ scripts/lib/srt-settings.json --debug <cmd>` names the refused host (`--debug` j
 `SRT_DEBUG`, which is the only thing that makes srt log at all — and it logs to stderr, shared with
 the sandboxed child).
 
-`filesystem.denyWrite` carries one entry, `**/.zshenv`. srt's built-in protected list covers
-`.zshrc`, `.zprofile` and `.profile` but not `.zshenv` — the one rc file *every* `zsh -c` sources,
-including the non-interactive ones srt itself spawns. Spelled as a glob to match how srt writes its
-own rules, so it covers `~/.zshenv` and this repo's stowed `zsh/.zshenv` alike.
+`filesystem.denyWrite` carries six entries, and they are **absolute paths on purpose**. srt
+resolves a relative pattern against the pane's startup cwd (`normalizePathForSandbox`), so
+`**/.zshenv` only ever matched below whatever directory the pane happened to start in — and
+`wt-session.sh` starts panes in the worktree. The same bug silently disabled srt's own built-in
+`**/.git/config` and `**/.git/hooks/**` for every repo but the one you were standing in. Absolute
+patterns skip that resolution.
+
+The entries cover `.zshenv` (srt's built-in list has `.zshrc`, `.zprofile` and `.profile` but not
+the one rc file *every* `zsh -c` sources), plus `config` and `hooks` under both `.git` and `.bare`
+— srt only knows the conventional layout, and this machine's repos are mostly bare-with-worktrees.
 
 Two settings are load-bearing and non-obvious: `allowPty` (without it a TUI can't enter raw mode
 and mouse movement types escape sequences) and `enableWeakerNetworkIsolation` (Go binaries verify

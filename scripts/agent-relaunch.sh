@@ -4,8 +4,9 @@
 # The launch string is built by the agent profile and stored nowhere, so a pane
 # whose agent exited has no way back: it drops to a host shell via the
 # scaffolder's `exec zsh`, and re-running wsg would boot the session cold.
-# Needed most after a policy change — srt reads scripts/lib/srt-settings.json
-# once at startup, so an approved domain reaches the next pane, not this one.
+# Needed most after a policy change — srt reads its settings (deployed to
+# /Users/Shared/$USER-policy) once at startup, so an approved domain reaches the
+# next pane, not this one.
 #
 # Args: pane id, window name, pane path.
 set -Eeuo pipefail

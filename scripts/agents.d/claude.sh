@@ -17,9 +17,10 @@ _agent_user="${USER:-$(id -un)}"
 _agent_srt_settings="/Users/Shared/$_agent_user-policy/srt-settings.json"
 _agent_share="/Users/Shared/sv-$_agent_user"
 
-# Sandbox invocation, up to and including `zsh -lc`. Default is sandvault alone.
-# WSG_EGRESS=1 adds srt's domain allowlist (source: scripts/lib/srt-settings.json,
-# deployed to the path above by install.sh). It needs `sv -x`: seatbelt does not
+# Sandbox invocation, up to and including `zsh -lc`. srt is the default; it
+# supplies both the domain allowlist and the filesystem denials (source:
+# scripts/lib/srt-settings.json, deployed to the path above by install.sh), so a
+# pane without it loses both. It needs `sv -x`: seatbelt does not
 # nest and srt is itself sandbox-exec, so this gives one seatbelt each —
 # sandvault the separate UID, srt the policy.
 # srt must wrap zsh, never `srt -c '<string>'`: that runs bash, which skips

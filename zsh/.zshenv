@@ -6,10 +6,11 @@ if [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
 fi
 
 # Pin the git settings that name a command to run, so a repo-local .git/config
-# cannot introduce one. GIT_CONFIG_COUNT has -c precedence, which beats local
-# config; repos under the sandvault share are writable by sandvault-$USER, and
-# a poisoned config would otherwise execute as this account on `git status`,
-# `fetch` or `commit`. Only closes keys with fixed names. alias.*, filter.*.clean
+# cannot introduce one. GIT_CONFIG_COUNT overrides every config file, including
+# repo-local — which is the threat. An explicit `git -c` still outranks it, which
+# is what makes the husky escape hatch below work. Repos under the share are
+# writable by sandvault-$USER, so a poisoned config would otherwise execute as
+# this account on `git status`, `fetch` or `commit`. Only closes keys with fixed names. alias.*, filter.*.clean
 # and diff.*.textconv take arbitrary ones, so they can't be pinned; they also
 # need a .gitattributes in the working tree, which is tracked and shows up in
 # git status.

@@ -1,9 +1,9 @@
 # Working in this repo
 
 Dotfiles for a macOS host that runs coding agents in a sandbox (sandvault for the
-UID boundary, srt for egress). The deploy model is not visible from the tree —
-read "Where this repo lives" and "Egress filtering" in the README before changing
-anything under `scripts/` or `agents/`.
+UID boundary, srt for egress *and* filesystem denials). The deploy model is not
+visible from the tree — read "Where this repo lives" and "Egress filtering" in
+the README before changing anything under `scripts/` or `agents/`.
 
 ## Four things that will catch you out
 
@@ -20,7 +20,10 @@ anything under `scripts/` or `agents/`.
   of `scripts/` is host-only tmux tooling. The relative path is deliberately the
   same on both sides: `~/.scripts/shared/…`.
 
-- **The egress allowlist is deployed too.** srt reads
+- **The srt policy is deployed too.** It is not only an allowlist — its
+  `filesystem.denyWrite` is what stops the sandbox writing `.git/config`,
+  `.git/hooks` and the rc files, and those patterns are absolute because srt
+  resolves relative ones against the pane's startup cwd. srt reads
   `/Users/Shared/$USER-policy/srt-settings.json`, not this repo. Adding a domain
   is: edit `scripts/lib/srt-settings.json`, commit, `./install.sh`, then
   `prefix + R` — srt reads its settings once at startup, so a running pane keeps

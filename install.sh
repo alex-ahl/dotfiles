@@ -23,7 +23,8 @@ command -v stow >/dev/null || { echo "stow not found — run: brew install stow"
 # Pull in the nvim submodule on a fresh clone.
 git submodule update --init --recursive
 
-# Stow packages: each mirrors $HOME. -t "$HOME" since the repo lives under ~/git.
+# Stow packages: each mirrors $HOME. -t "$HOME"; the repo itself lives under
+# ~/.config, outside the share (see README, "Where this repo lives").
 # Existing real dirs (e.g. ~/.claude) are descended into; missing dirs (e.g.
 # ~/.config/nvim) are folded into a single dir symlink.
 stow -t "$HOME" \
