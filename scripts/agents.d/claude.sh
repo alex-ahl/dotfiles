@@ -37,11 +37,13 @@ _agent_sandbox() {
     "$_agent_share"/*) ;;
     *) printf 'zsh -lc'; return ;;
   esac
-  if [ -n "${WSG_EGRESS:-}" ]; then
-    printf 'sv -x shell "${PWD:A}" -- srt -s %s zsh -lc' "$_agent_srt_settings"
-  else
-    printf 'sv shell "${PWD:A}" -- zsh -lc'
-  fi
+  # On by default (the scaffolders stamp 1); WSG_EGRESS=0 opts a session out.
+  # Empty means an older session that predates the default — treat as off, the
+  # same as it behaved when it was scaffolded.
+  case "${WSG_EGRESS:-}" in
+    ""|0) printf 'sv shell "${PWD:A}" -- zsh -lc' ;;
+    *)    printf 'sv -x shell "${PWD:A}" -- srt -s %s zsh -lc' "$_agent_srt_settings" ;;
+  esac
 }
 
 # window, resume-slug ("" = cold).

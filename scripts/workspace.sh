@@ -58,7 +58,10 @@ if ! tm has-session -t "$SESSION" 2>/dev/null; then
   tm set-option -t "$SESSION" @workspace "$WS"
   # Launch context for agent-relaunch.sh — see wt-session.sh for why.
   tm set-option -t "$SESSION" @wsg_agent  "$WSG_AGENT"
-  tm set-option -t "$SESSION" @wsg_egress "${WSG_EGRESS:-}"
+  # Resolve the default here so the stamp and agent_launch_cmd below agree;
+  # reading it separately in each place let a cold pane launch unfiltered.
+  WSG_EGRESS="${WSG_EGRESS:-1}"; export WSG_EGRESS
+  tm set-option -t "$SESSION" @wsg_egress "$WSG_EGRESS"
   tm new-window  -t "$SESSION:" -n dev -c "$PWD" \
     "zsh -ic 'nvim; exec zsh'"
   for w in $(agent_windows); do
