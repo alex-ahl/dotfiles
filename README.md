@@ -177,12 +177,23 @@ Sandvault sources it into every sandbox shell. A fine-grained PAT covers one res
     export GH_OWNER_PERSONAL=''        # your login: gh api /user --jq .login
     export GH_TOKEN="$GH_TOKEN_WORK"   # default for bash scripts, which skip the function
     source ~/.scripts/shared/gh-token.sh  # routes gh by the target repo's owner
-    umask 002                          # see below
 
-`umask 002` matters on both sides: the share is co-owned by this account and `sandvault-$USER`
-(same group, setgid dirs), so 002 keeps every file editable from either side. With the default 022
-a checkout on one side silently strips the other's write access to exactly the files it rewrote,
-and only the *owner* can chmod it back. The host half lives in `zsh/.zshenv`.
+Both accounts can write the share because `sv` applies an inheriting ACL
+(`group:sandvault-$USER allow …write…`) across it, and macOS evaluates ACLs ahead of the mode
+bits. The mode bits there are therefore decorative: a 644 file in the share is still writable by
+the sandbox. This repo used to set `umask 002` on both sides to achieve the same thing; that was
+redundant, and it made every tracked file in the share group-writable for no benefit.
+
+The ACL is applied at build time and inherited by anything *created* inside the share afterwards.
+It is not inherited by anything **moved** in — `mv` is a rename and carries the source's ACLs,
+which is how ~70 repos under `git/legacy/` ended up bare. After bulk-moving anything in, run
+`sv -r build` and check with:
+
+```sh
+for d in /Users/Shared/sv-$USER/git/*/; do
+  ls -lde "$d" | grep -qE "sandvault-$USER (inherited )?allow" || echo "no ACL: $d"
+done
+```
 
 Host-side only needs your normal `gh auth login`; the router is inert without these vars.
 Without the file, `gh` is unauthenticated inside the sandbox and `/start-day` runs TODO-only.
