@@ -14,8 +14,6 @@
       "Bash(gh issue create:*)",
       "Bash(git add:*)",
       "Bash(git restore --staged:*)",
-      "Write(//Users/alex/brain/**)",
-      "Write(//Users/Shared/sv-alex/brain/**)",
       "Edit(//Users/alex/handoffs/**)",
       "Edit(//Users/Shared/sv-alex/handoffs/**)",
       "Edit(//Users/alex/brain/**)",

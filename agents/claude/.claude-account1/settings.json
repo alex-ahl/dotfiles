@@ -22,8 +22,6 @@
       "Bash(gh issue create:*)",
       "Bash(git add:*)",
       "Bash(git restore --staged:*)",
-      "Write(//Users/alex/brain/**)",
-      "Write(//Users/Shared/sv-alex/brain/**)",
       "Bash(grep:*)",
       "Bash(diff:*)",
       "Bash(bash -n:*)",
