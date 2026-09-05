@@ -63,7 +63,7 @@ Remove anything not in the Brewfile: `brew bundle cleanup --file=~/.config/dotfi
 | `karabiner`| `~/.config/karabiner/karabiner.json`                        |
 | `worktrunk`| `~/.config/worktrunk/config.toml`                           |
 | `sol`      | `~/.config/sol/config.json`                                 |
-| `agents/claude` | `settings.json` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`), plus `.claude/agents/`. `commands/`, `skills/` and `CLAUDE.md` are symlinked by `agents/install.sh`, not stowed — and only into the two account dirs, so plain `~/.claude` gets none of them |
+| `agents/claude` | `settings.json` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`), plus `.claude/agents/`. `commands/`, `skills/` and `CLAUDE.md` are symlinked by `agents/install.sh`, not stowed. Plain `~/.claude` gets `CLAUDE.md` only — `sv` installs its own skill under `~/.claude/skills`, and a dir symlink there would hide it and send sv's next write into this repo |
 | `nvim`     | `~/.config/nvim` (git submodule → `alex-ahl/nvim`)          |
 | `scripts`  | `~/.scripts` (symlinked dir, on PATH-style use)             |
 

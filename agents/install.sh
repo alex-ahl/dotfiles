@@ -39,4 +39,11 @@ for acct in "$HOME/.claude-account1" "$HOME/.claude-account2"; do
   link_dir "$SKILLS"   "$acct/skills"
 done
 
-echo "linked global instructions + commands + skills into ~/.claude-account{1,2}"
+# Plain ~/.claude — used by any agent started without CLAUDE_CONFIG_DIR — gets
+# the instructions but not the dirs: `sv` installs its own sandvault-sv skill
+# there, and a dir symlink would both hide it and send sv's next write into this
+# repo.
+mkdir -p "$HOME/.claude"
+ln -sfn "$GLOBAL" "$HOME/.claude/CLAUDE.md"
+
+echo "linked global instructions + commands + skills into ~/.claude-account{1,2}, instructions into ~/.claude"
