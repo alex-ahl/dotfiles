@@ -10,15 +10,18 @@ sol/.config/sol/images_pasteboard/
 
 # --- .claude: track only settings.json, commands/, agents/ ---
 # (we only copy those in, but guard against accidental state staging)
-claude/**/projects/
-claude/**/sessions/
-claude/**/cache/
-claude/**/history.jsonl
-claude/**/shell-snapshots/
-claude/**/file-history/
-claude/**/todos/
-claude/**/backups/
-claude/**/mcp-needs-auth-cache.json
+# Leading **/ is load-bearing: a pattern with a slash in it is anchored to this
+# file's directory, so `claude/**/…` only ever matched a top-level claude/ — not
+# the package at agents/claude/, which is the one that can fill up.
+**/claude/**/projects/
+**/claude/**/sessions/
+**/claude/**/cache/
+**/claude/**/history.jsonl
+**/claude/**/shell-snapshots/
+**/claude/**/file-history/
+**/claude/**/todos/
+**/claude/**/backups/
+**/claude/**/mcp-needs-auth-cache.json
 # Per-project "allow always" grants, written by whichever session clicked them:
 # machine-local by design, and full of one-shot paths (a session scratchpad, a
 # home dir) that never match again. Anywhere in the tree, not just the package.

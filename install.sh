@@ -47,6 +47,10 @@ git update-index --skip-worktree sol/.config/sol/config.json
 # Agent configs live under agents/ so multiple agents (claude, opencode, ...)
 # can be sibling packages. Stow with agents/ as the stow dir, so e.g.
 # agents/claude/.claude-account1/ maps to ~/.claude-account1/.
+# Pre-create the targets: stow folds a *missing* directory into one symlink, so
+# on a fresh machine ~/.claude-account1 would become a link into this repo and
+# Claude would write its sessions, history and credentials inside it.
+mkdir -p "$HOME/.claude" "$HOME/.claude-account1" "$HOME/.claude-account2"
 stow -d "$PWD/agents" -t "$HOME" claude
 
 # Scripts are not a stow package — symlink the whole dir to ~/.scripts.
