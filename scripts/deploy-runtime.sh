@@ -14,20 +14,22 @@ set -Eeuo pipefail
 # parent of $0's dir is $HOME rather than the repo.
 cd "$(dirname "$0")" && cd "$(pwd -P)/.."
 
+# srt reads the allowlist as sandvault-$USER, so it cannot live in this repo.
+# Kept outside $SHARE, where `sv -r`'s ACL walk never reaches it; /Users/Shared
+# is sticky, so only this account can replace the dir. Deployed before the share
+# check below precisely because it lives outside the share — it lands even on a
+# machine where `sv build` has not run.
+POLICY="/Users/Shared/$USER-policy"
+install -d -m 755 "$POLICY"
+install -m 644 "$PWD/scripts/lib/srt-settings.json" "$POLICY/srt-settings.json"
+
 SHARE="/Users/Shared/sv-$USER"
 if [ ! -d "$SHARE" ]; then
   # Not an error on a fresh machine — the share only exists after `sv build`.
   # Said out loud because a silent skip and a working deploy look identical.
-  echo "no $SHARE — skipped the sandbox deploy (run: sv build)" >&2
+  echo "no $SHARE — policy deployed, runtime skipped (run: sv build)" >&2
   exit 0
 fi
-
-# srt reads the allowlist as sandvault-$USER, so it cannot live in this repo.
-# Kept outside $SHARE, where `sv -r`'s ACL walk never reaches it; /Users/Shared
-# is sticky, so only this account can replace the dir.
-POLICY="/Users/Shared/$USER-policy"
-install -d -m 755 "$POLICY"
-install -m 644 "$PWD/scripts/lib/srt-settings.json" "$POLICY/srt-settings.json"
 
 # The sandbox's ~/.scripts, skills, commands and agent settings.
 # sandvault-sync.sh wires the sandbox home to this copy.
