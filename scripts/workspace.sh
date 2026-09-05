@@ -2,8 +2,9 @@
 # Ghostty + tmux workspace launcher.
 #
 # Opens one Ghostty window attached to a tmux session named after the current
-# workspace, with windows: dev, ai-1, ai-2, shell. The ai-* windows auto-run the
-# configured agent (see scripts/lib/agent.sh; default claude, one per CLAUDE_CONFIG_DIR).
+# workspace, with windows: shell, shell, dev, ai-1, ai-2. The ai-* windows
+# auto-run the configured agent (see scripts/lib/agent.sh; default claude, one
+# per CLAUDE_CONFIG_DIR).
 #
 # Setup:
 #   1. brew install --cask ghostty
@@ -62,13 +63,17 @@ if ! tm has-session -t "$SESSION" 2>/dev/null; then
   # reading it separately in each place let a cold pane launch unfiltered.
   WSG_EGRESS="${WSG_EGRESS:-1}"; export WSG_EGRESS
   tm set-option -t "$SESSION" @wsg_egress "$WSG_EGRESS"
+  # Two shells: one to work in, one to leave a long-running command in.
+  tm new-window  -t "$SESSION:" -n shell -c "$PWD"
   tm new-window  -t "$SESSION:" -n dev -c "$PWD" \
     "zsh -ic 'nvim; exec zsh'"
   for w in $(agent_windows); do
     inner="$(agent_launch_cmd "$w" "")"
     tm new-window  -t "$SESSION:" -n "$w" -c "$PWD" "zsh -ic '$inner; exec zsh'"
   done
-  tm select-window -t "$SESSION:shell"
+  # `:^` (first window), not `:shell` — two windows share that name now, and a
+  # duplicate name is unresolvable as a tmux target.
+  tm select-window -t "$SESSION:^"
 fi
 
 # If already inside the wsg tmux server, switch in place — no new window.

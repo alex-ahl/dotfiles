@@ -49,6 +49,8 @@ if ! "$TMUX_BIN" -L "$SOCK" has-session -t "$sess" 2>/dev/null; then
   # reading it separately in each place let a cold pane launch unfiltered.
   WSG_EGRESS="${WSG_EGRESS:-1}"; export WSG_EGRESS
   "$TMUX_BIN" -L "$SOCK" set-option -t "$sess" @wsg_egress "$WSG_EGRESS"
+  # Two shells: one to work in, one to leave a long-running command in.
+  "$TMUX_BIN" -L "$SOCK" new-window -t "$sess:" -n shell -c "$path"
   "$TMUX_BIN" -L "$SOCK" new-window -t "$sess:" -n dev  -c "$path" \
     "zsh -ic 'nvim; exec zsh'"
   for w in $(agent_windows); do
@@ -56,7 +58,9 @@ if ! "$TMUX_BIN" -L "$SOCK" has-session -t "$sess" 2>/dev/null; then
     "$TMUX_BIN" -L "$SOCK" new-window -t "$sess:" -n "$w" -c "$path" \
       "zsh -ic '$inner; exec zsh'"
   done
-  "$TMUX_BIN" -L "$SOCK" select-window -t "$sess:shell"
+  # `:^` (first window), not `:shell` — two windows share that name now, and a
+  # duplicate name is unresolvable as a tmux target.
+  "$TMUX_BIN" -L "$SOCK" select-window -t "$sess:^"
   scaffolded=1
 fi
 "$TMUX_BIN" -L "$SOCK" switch-client -t "$sess"
