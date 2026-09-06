@@ -16,12 +16,19 @@ Agent-neutral slash-command sources live in `agents/shared/commands/` and the sk
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # 2. Clone + install. install.sh runs `brew bundle` (taps, formulae, casks,
-#    including stow), inits the nvim submodule, and stows everything.
+#    including stow), inits the nvim submodule, stows everything, then converges
+#    the sandbox: `sv build` if the share is missing, the ~/git ~/brain
+#    ~/handoffs links, the runtime deploy, and sandvault-sync.sh if the sandbox
+#    home is not wired yet. Every step is guarded, so re-running is a no-op.
 git clone --recurse-submodules git@github.com:<you>/dotfiles.git ~/.config/dotfiles
 cd ~/.config/dotfiles
 ./install.sh          # set NO_BREW=1 to skip the brew bundle step
 exec zsh
 ```
+
+One step is left to you, because it holds live tokens: create
+`/Users/Shared/sv-$USER/user/.zshenv` from inside `sv shell` — see "Not tracked" below.
+`install.sh` says so if it is missing.
 
 Not covered by Homebrew (install separately if you want them):
 

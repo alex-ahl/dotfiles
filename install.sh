@@ -54,14 +54,72 @@ mkdir -p "$HOME/.claude" "$HOME/.claude-account1" "$HOME/.claude-account2"
 stow -d "$PWD/agents" -t "$HOME" claude
 
 # Scripts are not a stow package — symlink the whole dir to ~/.scripts.
-ln -sfn "$PWD/scripts" "$HOME/.scripts"
+# Refuse a real dir rather than nesting the link inside it, same as the share
+# links below: `ln -sfn` into an existing directory creates ~/.scripts/scripts.
+if [ -d "$HOME/.scripts" ] && [ ! -L "$HOME/.scripts" ]; then
+  echo "$HOME/.scripts is a real directory — move it aside, then re-run" >&2
+else
+  ln -sfn "$PWD/scripts" "$HOME/.scripts"
+fi
 
 # Link shared agent commands + skills into each agent's config dirs.
 # Not stow — targets live inside runtime dirs.
 "$PWD/agents/install.sh"
 
-# Publish what the sandbox needs. Its own script so a skill or shared-script
-# edit can be published without the brew + stow work above.
+# --- sandbox ----------------------------------------------------------------
+# One command for a new machine, and the same command afterwards: every step is
+# guarded, so a re-run costs a couple of stats and changes nothing. Order is
+# load-bearing — the share has to exist before the runtime is deployed into it,
+# and the runtime before the sandbox home is wired to that copy.
+SHARE="/Users/Shared/sv-$USER"
+SBHOME="/Users/sandvault-$USER"
+
+# `sv build` creates the sandvault account and the share; it needs sudo, so say
+# what is about to happen. Guarded on the share, not run every time.
+if [ ! -d "$SHARE" ] && command -v sv >/dev/null; then
+  echo "no $SHARE yet — running sv build (sudo; creates the sandvault-$USER account)" >&2
+  sv build
+fi
+
+# ~/git, ~/brain and ~/handoffs live in the share and are symlinked from $HOME on
+# both sides. sandvault-sync.sh does the sandbox side (it needs `sv shell`); the
+# host side is three symlinks. Without ~/git the workspace picker lists no repos
+# and cannot say why — fzf repaints over anything written to stderr.
+if [ -d "$SHARE" ]; then
+  for d in git brain handoffs; do
+    # A real dir here is someone's data, not ours to replace — and `ln -sfn`
+    # would nest the link inside it rather than fail.
+    if [ -d "$HOME/$d" ] && [ ! -L "$HOME/$d" ]; then
+      echo "$HOME/$d is a real directory — move it into $SHARE, then re-run" >&2
+      continue
+    fi
+    mkdir -p "$SHARE/$d"
+    ln -sfn "$SHARE/$d" "$HOME/$d"
+  done
+fi
+
+# Publish what the sandbox reads. Its own script so a skill or shared-script edit
+# can be published without the brew + stow work above.
 "$PWD/scripts/deploy-runtime.sh"
+
+# Wire the sandbox home to that copy. Unconditional, not guarded on "does it
+# look wired": the links are only half of it — a change to agents/install.sh or
+# to DIRS also has to be re-applied inside the sandbox, and no cheap stat sees
+# that. It costs ~2.4s of `sv shell` round-trips and is idempotent.
+if [ -d "$SHARE" ]; then
+  "$PWD/scripts/sandvault-sync.sh"
+fi
+
+# The two things install.sh cannot do for you.
+if [ -d "$SHARE" ]; then
+  # Holds live PATs, so it is created by hand from inside sv shell (README,
+  # "Not tracked").
+  [ -f "$SHARE/user/.zshenv" ] || \
+    echo "note: no $SHARE/user/.zshenv — gh is unauthenticated in the sandbox" >&2
+  # ~/brain is its own repo. The link above only makes the directory, so without
+  # the clone the journal still works and is versioned by nothing.
+  [ -d "$SHARE/brain/.git" ] || \
+    echo "note: $SHARE/brain is not a checkout — clone your brain repo into it" >&2
+fi
 
 echo "dotfiles installed. Restart your shell (or: exec zsh)."

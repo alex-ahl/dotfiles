@@ -10,12 +10,12 @@
 # install.sh deploys the parts the sandbox needs to $SHARE/agent-runtime; this
 # script wires the sandbox home to that copy.
 #
-# Fresh machine, in order — the share only exists after `sv build`:
-#   brew bundle
-#   sv build
+# Fresh machine: `install.sh` runs this itself once the share exists, so the
+# whole setup is
 #   git clone <dotfiles> ~/.config/dotfiles && ~/.config/dotfiles/install.sh
-#   scripts/sandvault-sync.sh
+# and then the one step that cannot be automated, because it holds live PATs:
 #   sv shell, then create $SHARE/user/.zshenv — gh tokens (README, "Not tracked")
+# Run this by hand only to re-wire after changing agents/install.sh or DIRS.
 set -Eeuo pipefail
 
 SHARE="/Users/Shared/sv-$USER"
