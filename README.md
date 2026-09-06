@@ -225,8 +225,8 @@ in the share is writable by `sandvault-$USER` and therefore an escape: sandvault
 the boundary POSIX enforces, and the host's own execution surface has to stay outside the shared
 tree for it to mean anything.
 
-The sandbox still needs three things from here, so `install.sh` deploys them outward as **copies,
-never symlinks** — an agent write in the share must not reach anything the host runs:
+The sandbox still needs three things from here, so `scripts/deploy-runtime.sh` deploys them outward
+as **copies, never symlinks** — an agent write in the share must not reach anything the host runs:
 
 | deployed to | what | read by |
 | --- | --- | --- |
@@ -273,18 +273,18 @@ It runs under `sv -x`, because seatbelt doesn't nest: srt is `sandbox-exec` too,
 profile has to be off for srt's to apply. Sandvault still supplies the separate UID, which is the
 boundary POSIX enforces; srt supplies the policy.
 
-Adding a domain is deliberately yours. srt does not read this repo — `install.sh` deploys the
+Adding a domain is deliberately yours. srt does not read this repo — `deploy-runtime.sh` writes the
 settings file to `/Users/Shared/$USER-policy/`, owned by you and 644. That directory sits outside
 the sandvault share, so `sv -r`'s ACL walk never re-grants the sandbox group write on it, and
 `/Users/Shared` is sticky, so the sandbox account cannot replace it either.
 
-When the agent reports a blocked host, add it, commit, and re-run `install.sh` — the commit is the
-approval record, the deploy is what srt actually reads:
+When the agent reports a blocked host, add it, commit, and deploy — the commit is the approval
+record, the deploy is what srt actually reads:
 
 ```sh
 jq '.network.allowedDomains |= (. + ["example.com"] | unique)' \
   scripts/lib/srt-settings.json > /tmp/s && mv /tmp/s scripts/lib/srt-settings.json
-./install.sh
+scripts/deploy-runtime.sh
 ```
 
 srt reads its settings once at startup, so a new domain applies to the next pane, not a running one.

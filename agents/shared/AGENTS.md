@@ -33,17 +33,19 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
 
 - **Dotfiles live outside the sandbox.** `~/.scripts/*` and the skills and
   commands under `~/.claude-account*/` are deployed copies; the source is a
-  host-only repo. When you are sandboxed you cannot see it, and editing an
-  existing copy appears to work and is silently reverted by the next
-  `install.sh`; adding a new one appears to do nothing. Neither leaves a trace.
+  host-only repo. When you are sandboxed you cannot see it, and both editing an
+  existing copy and adding a new one appear to work — the deployed tree is
+  writable — but the next `scripts/deploy-runtime.sh` rebuilds it from the repo
+  and your change is gone. Neither leaves a trace.
   If a change is needed there, don't patch the copy — write the proposed content
   to `~/handoffs/<slug>.md` (shared, the host account reads it) and hand me a
   paste-ready instruction naming the source path. Deployed → source:
   `~/.claude-account*/skills|commands/…` →
   `agents/shared/…`, `CLAUDE.md` → `agents/shared/AGENTS.md`,
-  `~/.scripts/shared/…` → `scripts/shared/…`. Have it end with `./install.sh`
-  from the repo root — `agents/install.sh` only relinks the host account and
-  leaves this copy stale.
+  `~/.scripts/shared/…` → `scripts/shared/…`. Have it end with
+  `scripts/deploy-runtime.sh` from the repo root — `agents/install.sh` only
+  relinks the host account and leaves this copy stale, and `./install.sh` does
+  the deploy but restows the whole home on the way past.
 
 - **Don't prefix shell commands with `cd <dir> &&` or `git -C <dir>` when already
   working in that repo** — run git and other tools in the current working

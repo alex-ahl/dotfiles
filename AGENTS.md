@@ -26,9 +26,9 @@ the README before changing anything under `scripts/` or `agents/`.
   `.git/hooks` and the rc files, and those patterns are absolute because srt
   resolves relative ones against the pane's startup cwd. srt reads
   `/Users/Shared/$USER-policy/srt-settings.json`, not this repo. Adding a domain
-  is: edit `scripts/lib/srt-settings.json`, commit, `./install.sh`, then
-  `prefix + R` — srt reads its settings once at startup, so a running pane keeps
-  the old policy. The deployed copy is not writable by the sandbox; that is the
+  is: edit `scripts/lib/srt-settings.json`, commit, `scripts/deploy-runtime.sh`,
+  then `prefix + R` — srt reads its settings once at startup, so a running pane
+  keeps the old policy. The deployed copy is not writable by the sandbox; that is the
   point.
 
 - **An agent working in this repo is unsandboxed.** The tree is host-only by
@@ -49,8 +49,10 @@ the README before changing anything under `scripts/` or `agents/`.
 
 ## Don't
 
-- Run `./install.sh` unasked. It restows the user's entire home and runs
-  `brew bundle`; it is theirs to trigger.
+- Run `./install.sh` unasked. It restows the user's entire home, runs
+  `brew bundle`, and will `sv build` a missing sandbox; it is theirs to trigger.
+  To publish an edit, run `scripts/deploy-runtime.sh` instead — same deploy,
+  none of the rest.
 - Assume a `scripts/` edit is testable in a sandboxed pane without a deploy.
 - Add a package to the `stow` list for an app that rewrites its own config —
   see the `sol` block in `install.sh` for why.
