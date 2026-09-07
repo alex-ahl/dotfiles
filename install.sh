@@ -14,6 +14,14 @@ cd "$(dirname "$0")"
 # Non-fatal: set -e made a single cask that fails to upgrade veto everything
 # below it — the stow and the sandbox deploy, which are the part that matters.
 if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
+  # The Brewfile taps two third-party taps, and brew refuses to even check a
+  # formula from an untrusted one — which failed the whole bundle. Granted per
+  # formula rather than per tap on purpose: a formula added to either tap later
+  # does not inherit the grant. Committing the list here is the approval record.
+  # Idempotent; a second run just reports "Already trusted".
+  for f in hashicorp/tap/terraform oven-sh/bun/bun; do
+    brew trust --formula "$f" >/dev/null 2>&1 || true
+  done
   brew bundle --no-upgrade --file="$PWD/Brewfile" \
     || echo "brew bundle failed — continuing with stow + deploy" >&2
 fi
