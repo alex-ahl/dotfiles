@@ -14,16 +14,21 @@ time and settling each dependency before the next.
   reply, and whichever question mattered gets a clause instead of a paragraph.
 - **Carry your own recommendation.** Every question arrives with the answer you would pick and
   why, so "yes" is a complete reply and disagreeing is cheap.
-- **Read before asking.** If the codebase answers it, go and read it — a question the repo
-  already answers spends attention the open ones need.
+- **Read before asking.** If the codebase answers it, go and read it. A question the repo
+  already answers spends attention that the open questions need.
 
 ## What to push on
 
 - **Overloaded words.** When one term covers two things, propose a canonical name for each:
-  "you're saying *account* — Customer or User? Those behave differently." A term left vague
-  comes back as a bug or a rewrite.
-- **The unstated failure mode.** The second run, the concurrent run, the half-finished run, the
-  run after someone deletes the thing.
+  "you're saying *account* — Customer or User? Those behave differently." Never let one through
+  to keep momentum: the ambiguity comes back as a bug or a rewrite, and naming it costs one
+  question now.
+- **Claims the code contradicts.** If the described behaviour isn't what the code does, name the
+  file that disagrees and ask which is right.
+- **Boundaries, through scenarios.** Invent the specific case that forces a decision about where
+  one concept ends and the next begins.
+- **The unstated failure mode.** What happens on the second run, the concurrent run, the
+  half-finished run, the run after someone deletes the thing.
 
 ## Decisions worth recording
 
@@ -34,9 +39,12 @@ Say a decision is worth recording only when all three hold:
 3. **A genuine trade-off** — there were real alternatives and one was chosen for stated reasons.
 
 Miss any one and it isn't worth recording. When all three hold, name it as a candidate for the
-day's `### Decisions` entry, which `/wrap-up` writes — don't write it anywhere yourself.
+day's `### Decisions` entry, which `/wrap-up` writes.
 
 ## Never
 
-- **Never argue the user out of their answer.** Ask, recommend, note the disagreement if it
-  matters, and move on — a grilling that turns into advocacy stops producing information.
+- **Never write a spec, plan, or decision file.** The thinking belongs in the conversation, and
+  a decision lands in the journal only when the user runs `/wrap-up` — a file written here is
+  one nobody asked for and nobody maintains.
+- **Never argue the user out of their answer.** Ask, recommend, record the disagreement if it
+  matters, and move on — a grilling that becomes advocacy stops producing information.
