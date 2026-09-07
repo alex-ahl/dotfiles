@@ -41,8 +41,6 @@ brew "node"
 brew "nuget"
 # Development kit for the Java programming language
 brew "openjdk"
-# Object-relational database system
-brew "postgresql@13", restart_service: :changed, link: true
 # Theme for zsh
 brew "powerlevel10k"
 # Command-line shell and scripting language
@@ -153,7 +151,6 @@ vscode "donjayamanne.githistory"
 vscode "drblury.protobuf-vsc"
 vscode "eriklynd.json-tools"
 vscode "esbenp.prettier-vscode"
-vscode "github.copilot-chat"
 vscode "github.vscode-github-actions"
 vscode "golang.go"
 vscode "hashicorp.terraform"
