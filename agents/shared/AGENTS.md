@@ -68,12 +68,9 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   setting, and new value. This holds even when the change is the obvious way to
   make the task work.
 
-- **Keep comments terse but clear** — the shortest wording that's still
-  understandable; terseness never at the cost of comprehension. Don't restate
-  self-explanatory code; comment for what the code can't say (a constraint, a
-  gotcha, the *why*). **Exception:** shell / config scripts (dotfiles, setup
-  scripts) may carry explanatory comments, still terse. Match the comment density
-  of the surrounding file.
+- **Read `~/.claude-account*/DEV-MANIFEST.md` before writing, reviewing, or
+  discussing code.** My coding rules live there, not here. Read the file rather
+  than recalling it, and follow its own scoping rules.
 
 - **Don't spawn subagents / background agents without approval.** Before
   launching any background or parallel agent work, say what you'd run and get an
