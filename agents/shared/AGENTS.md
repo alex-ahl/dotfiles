@@ -60,6 +60,14 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   explicitly run a command that asks for one, and put it where that command says.
   This overrides any skill step that would write these files.
 
+- **Don't change a config that governs the source without asking.** `tsconfig.json`,
+  ESLint/Prettier, `package.json`, bundler and build config, test-runner config,
+  `.editorconfig`, CI workflows. Tell me *why* — the problem the current config
+  causes, in a sentence or two — and stop there. Don't volunteer *what* to change:
+  naming the fix pre-empts a decision that is mine. If I ask, give the exact file,
+  setting, and new value. This holds even when the change is the obvious way to
+  make the task work.
+
 - **Keep comments terse but clear** — the shortest wording that's still
   understandable; terseness never at the cost of comprehension. Don't restate
   self-explanatory code; comment for what the code can't say (a constraint, a
