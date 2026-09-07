@@ -3,6 +3,17 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Output helpers. Colour only on a terminal, and honour NO_COLOR / TERM=dumb —
+# same guard as clone-bare.sh, so a piped or logged run stays plain text.
+if [ -t 1 ] && [ -z "${NO_COLOR-}" ] && [ "${TERM-}" != dumb ]; then
+  BLUE='\033[0;34m' GREEN='\033[0;32m' YELLOW='\033[1;33m' NOFORMAT='\033[0m'
+else
+  BLUE='' GREEN='' YELLOW='' NOFORMAT=''
+fi
+step() { printf "${BLUE}==>${NOFORMAT} %s\n" "$1"; }
+ok()   { printf "${GREEN}==>${NOFORMAT} %s\n" "$1"; }
+warn() { printf "${YELLOW}  ! %s${NOFORMAT}\n" "$1" >&2; }
+
 # Install Homebrew packages from the Brewfile (skip with NO_BREW=1); this also
 # installs stow itself. Idempotent.
 #
@@ -14,6 +25,7 @@ cd "$(dirname "$0")"
 # Non-fatal: set -e made a single cask that fails to upgrade veto everything
 # below it — the stow and the sandbox deploy, which are the part that matters.
 if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
+  step "Homebrew packages"
   # The Brewfile taps two third-party taps, and brew refuses to even check a
   # formula from an untrusted one — which failed the whole bundle. Granted per
   # formula rather than per tap on purpose: a formula added to either tap later
@@ -23,10 +35,12 @@ if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
     brew trust --formula "$f" >/dev/null 2>&1 || true
   done
   brew bundle --no-upgrade --file="$PWD/Brewfile" \
-    || echo "brew bundle failed — continuing with stow + deploy" >&2
+    || warn "brew bundle failed — continuing with stow + deploy"
 fi
 
-command -v stow >/dev/null || { echo "stow not found — run: brew install stow" >&2; exit 1; }
+command -v stow >/dev/null || { warn "stow not found — run: brew install stow"; exit 1; }
+
+step "Dotfiles"
 
 # Pull in the nvim submodule on a fresh clone.
 git submodule update --init --recursive
@@ -65,10 +79,12 @@ stow -d "$PWD/agents" -t "$HOME" claude
 # Refuse a real dir rather than nesting the link inside it, same as the share
 # links below: `ln -sfn` into an existing directory creates ~/.scripts/scripts.
 if [ -d "$HOME/.scripts" ] && [ ! -L "$HOME/.scripts" ]; then
-  echo "$HOME/.scripts is a real directory — move it aside, then re-run" >&2
+  warn "$HOME/.scripts is a real directory — move it aside, then re-run"
 else
   ln -sfn "$PWD/scripts" "$HOME/.scripts"
 fi
+
+step "Agent configs"
 
 # Link shared agent commands + skills into each agent's config dirs.
 # Not stow — targets live inside runtime dirs.
@@ -79,13 +95,15 @@ fi
 # guarded, so a re-run costs a couple of stats and changes nothing. Order is
 # load-bearing — the share has to exist before the runtime is deployed into it,
 # and the runtime before the sandbox home is wired to that copy.
+step "Sandbox"
+
 SHARE="/Users/Shared/sv-$USER"
 SBHOME="/Users/sandvault-$USER"
 
 # `sv build` creates the sandvault account and the share; it needs sudo, so say
 # what is about to happen. Guarded on the share, not run every time.
 if [ ! -d "$SHARE" ] && command -v sv >/dev/null; then
-  echo "no $SHARE yet — running sv build (sudo; creates the sandvault-$USER account)" >&2
+  warn "no $SHARE yet — running sv build (sudo; creates the sandvault-$USER account)"
   sv build
 fi
 
@@ -98,7 +116,7 @@ if [ -d "$SHARE" ]; then
     # A real dir here is someone's data, not ours to replace — and `ln -sfn`
     # would nest the link inside it rather than fail.
     if [ -d "$HOME/$d" ] && [ ! -L "$HOME/$d" ]; then
-      echo "$HOME/$d is a real directory — move it into $SHARE, then re-run" >&2
+      warn "$HOME/$d is a real directory — move it into $SHARE, then re-run"
       continue
     fi
     mkdir -p "$SHARE/$d"
@@ -123,11 +141,11 @@ if [ -d "$SHARE" ]; then
   # Holds live PATs, so it is created by hand from inside sv shell (README,
   # "Not tracked").
   [ -f "$SHARE/user/.zshenv" ] || \
-    echo "note: no $SHARE/user/.zshenv — gh is unauthenticated in the sandbox" >&2
+    warn "no $SHARE/user/.zshenv — gh is unauthenticated in the sandbox"
   # ~/brain is its own repo. The link above only makes the directory, so without
   # the clone the journal still works and is versioned by nothing.
   [ -d "$SHARE/brain/.git" ] || \
-    echo "note: $SHARE/brain is not a checkout — clone your brain repo into it" >&2
+    warn "$SHARE/brain is not a checkout — clone your brain repo into it"
 fi
 
-echo "dotfiles installed. Restart your shell (or: exec zsh)."
+ok "dotfiles installed — restart your shell (or: exec zsh)"
