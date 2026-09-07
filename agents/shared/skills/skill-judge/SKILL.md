@@ -20,9 +20,14 @@ anything. Only the third is evidence; the first two are checks.
 
 ## 2. Content — sort every line into one of three
 
-- **Knowledge** — true in any repo, for anyone ("inspect before staging", "don't commit
-  secrets"). The model has it. Delete.
-- **Preference** — a choice among things it already knows (50-char subjects; Conventional
+Sort against the **weakest agent that will load the skill**, not the one doing the sorting.
+These skills are agent-neutral by design — two accounts today, a different agent later, and a
+subagent on a cheaper model at any time. A line is only Knowledge if *every* reader already does
+it unprompted; if the weakest one wouldn't, it is Preference and it stays.
+
+- **Knowledge** — true in any repo, for anyone, and done unprompted by every agent that loads
+  this ("inspect before staging", "don't commit secrets"). Delete.
+- **Preference** — a choice among things they already know (50-char subjects; Conventional
   Commits; three lessons, not ten). Keep, one line each. You're picking a branch, not teaching.
 - **Local fact** — only true here: the tools in use, the directory layout, the constraints of
   this machine, the rule the user gave you. Keep all of it. This is the skill.
@@ -46,6 +51,9 @@ Everything above is opinion, including yours about your own writing. The one hon
 task **without** the skill and compare. What the agent did anyway was Knowledge. What only
 happened with the skill loaded is what the skill is worth.
 
+Ablate on the agent that will run the task, not the one judging — a result on the strongest
+reader says nothing about the weakest, and the weakest is what the skill has to carry.
+
 Do this for skills you rely on. Reach for it whenever the argument for keeping one has become a
 discussion about how well written it is.
 
@@ -64,4 +72,7 @@ discussion about how well written it is.
 - **Never score your own skill and call it evidence** — you can't tell which of your own
   paragraphs the model already knew. Sort by Knowledge/Preference/Local fact instead, which asks
   a question you *can* answer, or ablate.
+- **Never sort against yourself** — the agent judging is the strongest reader the skill will
+  get, so its competence is the wrong baseline. Cutting a line because *you* would have done it
+  anyway breaks the skill for the model that wouldn't.
 - **Never forgive redundancy** as "helpful context".
