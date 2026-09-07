@@ -48,6 +48,10 @@ Four sections, in this order, nothing else:
 - **No extra framing.** No Summary, Root cause, Impact, Related, Notes, or Suggested fix
   sections. The four are enough.
 - **No emoji, no checkboxes, no ornament** beyond the headings and the numbered list.
+- **No progress.** No PR or branch names, no "already fixed in X", no notes on what is
+  underway. The four sections describe the bug, phrased the same whether nobody has looked
+  at it yet or a fix is nearly merged — status lives in the tracker and the PR, and a ticket
+  carrying it reads as stale the moment either moves.
 - **Short.** Background ≤ 4 sentences. Each step ≤ 1 sentence. Expected ≤ 2. Actual ≤ 2. A
   section straining the limit means the wording is wrong, not the limit.
 
