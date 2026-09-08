@@ -16,6 +16,13 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   the user. Applies in every repo, and overrides any skill/workflow step that
   would commit or branch (e.g. executing-plans, finishing-a-development-branch).
 
+- **Re-check git state before mentioning it, and only mention it if it's true.**
+  After a commit handoff I usually commit right away, so a reading taken earlier
+  in the turn is stale by the time I read your message — "still uncommitted" then
+  reads as nagging about something I already did. Run `git status` at the moment
+  you're about to say it. Genuinely uncommitted is worth one line; already
+  committed is worth none.
+
 - **An egress block is not the service saying no.** The sandbox's allowlist
   refuses a host by answering the CONNECT itself — HTTP 403 with
   `X-Proxy-Error: blocked-by-allowlist` — so the tunnel never opens:
