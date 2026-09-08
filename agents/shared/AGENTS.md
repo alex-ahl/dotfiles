@@ -30,8 +30,11 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   closed` from WebFetch, a bare reset. **The 403 is not the discriminator**;
   the proxy sends one too. A real refusal arrives *inside an established
   connection*, as the answer to your request, carrying the service's own body.
-  On a block: stop, name the host and why you needed it, and give me the
-  command that adds it. Never retry and never route around it via a mirror.
+  On a block: stop, name why you needed it, and give me the domains to
+  whitelist — probe every host the task needs in one pass, so the list is
+  complete and one relaunch covers it. Never route around it via a mirror.
+  Probing to enumerate blocks is how the list gets built; retrying a blocked
+  host hoping it opens is not.
   If the refused host isn't the one you requested (a redirect, a sub-resource),
   say so rather than guessing. The allowlist is mine to edit — that's the
   point. It applies to the next pane, not this one, so after I add a host wait
