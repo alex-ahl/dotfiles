@@ -36,6 +36,12 @@ if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
   done
   brew bundle --no-upgrade --file="$PWD/Brewfile" \
     || warn "brew bundle failed — continuing with stow + deploy"
+  # Packages from private repos are not in the public Brewfile; see README,
+  # "Not tracked". Absent on a machine that does not need them.
+  if [ -f "$PWD/Brewfile.local" ]; then
+    brew bundle --no-upgrade --file="$PWD/Brewfile.local" \
+      || warn "local brew bundle failed — continuing with stow + deploy"
+  fi
 fi
 
 command -v stow >/dev/null || { warn "stow not found — run: brew install stow"; exit 1; }

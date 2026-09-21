@@ -31,6 +31,9 @@ sol/.config/sol/images_pasteboard/
 docker/.docker/.token_seed
 docker/.docker/contexts/
 
+# --- brew: packages from private repos live in an untracked local bundle ---
+Brewfile.local
+
 # --- misc ---
 node_modules/
 .DS_Store

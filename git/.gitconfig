@@ -1,8 +1,11 @@
 # This is Git's per-user configuration file.
 [user]
-# Please adapt and uncomment the following lines:
 	name = Alexander Åhl
-	email = 7934262+alex-ahl@users.noreply.github.com
+# Identity and any employer-specific settings live in ~/.gitconfig.local, which
+# is not tracked here. A missing include is not an error, so this file stands
+# alone on a fresh machine — set user.email there before your first commit.
+[include]
+	path = ~/.gitconfig.local
 [credential "https://github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
@@ -12,5 +15,3 @@
 [credential]
 	helper = 
 	helper = /usr/local/share/gcm-core/git-credential-manager
-[credential "https://dev.azure.com"]
-	useHttpPath = true

@@ -179,6 +179,18 @@ credentials), `.config/zellij`, `.config/opencode`, sol binary state, and the le
 iTerm2 `~/git/scripts/workspace.sh`. Nothing here points at it: it lives in the share, so the
 sandbox can rewrite it, and anything host-executed there is an escape.
 
+**`~/.gitconfig.local`** — included from the tracked `~/.gitconfig`, and the only place your
+`user.email` lives. This repo is public, so the commit identity and any employer-specific
+settings (an Azure DevOps `useHttpPath`, say) stay out of it. Git treats a missing include as
+a no-op, so a fresh machine works until you write the file:
+
+    [user]
+        email = you@example.com
+
+**`Brewfile.local`** — same idea for packages that come from private repos (a `go` install off a
+private org, say). Gitignored, and `install.sh` bundles it after the public `Brewfile` when the
+file exists, so a machine without it installs the public list and moves on.
+
 **Sandbox `gh` tokens** — `/Users/Shared/sv-$USER/user/.zshenv`. Outside the repo, and created
 from inside `sv shell`. Owned by the sandbox user — but note the host can read *and* write it
 anyway: the share's inherited ACL grants `group:sandvault-$USER` write, and this account is in that

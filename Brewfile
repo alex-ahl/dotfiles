@@ -23,6 +23,8 @@ brew "harlequin"
 brew "helm"
 # Quickly and easily send REST, SOAP, GraphQL and gRPC requests
 brew "httpyac"
+# Tools and libraries to manipulate images in select formats
+brew "imagemagick"
 # Istio configuration command-line utility
 brew "istioctl"
 # Lightweight and flexible command-line JSON processor
@@ -179,7 +181,6 @@ vscode "vue.volar"
 vscode "w77.git-blame-w77"
 vscode "waderyan.gitblame"
 vscode "yuvraj.json-scape-unscape"
-
 go "golang.org/x/tools/gopls"
 go "honnef.co/go/tools/cmd/staticcheck"
 npm "corepack"
