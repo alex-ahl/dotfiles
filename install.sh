@@ -142,7 +142,21 @@ if [ -d "$SHARE" ]; then
   "$PWD/scripts/sandvault-sync.sh"
 fi
 
-# The two things install.sh cannot do for you.
+# Commit identity. The tracked ~/.gitconfig defaults to the personal address, and
+# ~/.gitconfig.local adds a rule per employer org, keyed off the repo's remote
+# (README, "Not tracked"). It holds the org name, so it cannot live in this repo.
+if [ ! -f "$HOME/.gitconfig.local" ]; then
+  warn "no ~/.gitconfig.local — work repos will commit as the personal address (fine if this machine has none)"
+else
+  # An include pointing at a file that does not exist is a silent no-op in git:
+  # the rules read as installed and route nothing. Worth one stat each.
+  awk -F= '/^[[:space:]]*path[[:space:]]*=/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}' \
+    "$HOME/.gitconfig.local" | while IFS= read -r inc; do
+    [ -f "${inc/#\~/$HOME}" ] || warn "~/.gitconfig.local includes $inc, which does not exist"
+  done
+fi
+
+# The things install.sh cannot do for you.
 if [ -d "$SHARE" ]; then
   # Holds live PATs, so it is created by hand from inside sv shell (README,
   # "Not tracked").

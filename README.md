@@ -228,7 +228,9 @@ a symlink into the share, and git resolves it before matching, so only the physi
 `/Users/Shared/sv-$USER/git/...` would fire.
 
 Git treats a missing include as a no-op, so a fresh machine commits as the personal default
-until you write these.
+until you write these — and `install.sh` warns when the file is absent, or when a rule points at
+an identity file that is not there. That second case is the quiet one: git skips a missing
+include without a word, so the rules read as installed and route nothing.
 
 Audit it any time — the address every repo would actually commit under:
 
