@@ -16,6 +16,10 @@
 #   repo-resolve --path <dir>         print the readable path for a repo root
 #   repo-resolve --worktrees <query>  print the worktree paths of a repo
 # Exit: 0 ok, 2 usage, 3 ambiguous (candidates on stderr), 4 none.
+#
+# A dir holding a `.repo-ignore` file is an archive: its repos stay out of both
+# listings (so they never reach the pickers) and resolve only when nothing live
+# matches the query. That is what keeps ~/git/legacy out of the way.
 set -Eeuo pipefail
 
 # Physical path: ~/git is a symlink on both sides of the sandbox, and paths
@@ -25,40 +29,66 @@ MAXDEPTH="${REPO_RESOLVE_MAXDEPTH:-3}"
 
 lc() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
 
-# Find repo roots, stopping descent once one is found. Fills global `roots`.
+# Find repo roots, stopping descent once one is found. Fills globals `roots` and
+# `archived` — a dir holding a .repo-ignore marker keeps its repos out of both
+# listings and out of the first resolution pass (see resolve_repo_root).
 scan_roots() {
   roots=()
-  _scan() {  # $1 = dir, $2 = depth
-    local d="$1" depth="$2" sub base
-    if [ -e "$d/.git" ] || [ -d "$d/.bare" ]; then roots+=("$d"); return; fi
+  archived=()
+  _scan() {  # $1 = dir, $2 = depth, $3 = 1 if under a .repo-ignore marker
+    local d="$1" depth="$2" skip="$3" sub base
+    [ -e "$d/.repo-ignore" ] && skip=1
+    if [ -e "$d/.git" ] || [ -d "$d/.bare" ]; then
+      if [ "$skip" = 1 ]; then archived+=("$d"); else roots+=("$d"); fi
+      return
+    fi
     [ "$depth" -ge "$MAXDEPTH" ] && return
     for sub in "$d"/*/; do
       [ -d "$sub" ] || continue
       base="$(basename "$sub")"
       case "$base" in .* | node_modules) continue ;; esac
-      _scan "${sub%/}" "$((depth + 1))"
+      _scan "${sub%/}" "$((depth + 1))" "$skip"
     done
   }
-  _scan "$GIT_ROOT" 0
+  _scan "$GIT_ROOT" 0 0
+}
+
+# Match a query against a list of repo roots, exact basename before substring.
+# Prints the matches, one per line, or nothing.
+match_roots() {  # $1 = lowercased query ; rest = roots
+  local q="$1" r n
+  shift
+  local exact=() subm=()
+  for r in "$@"; do
+    n="$(lc "$(basename "$r")")"
+    if [ "$n" = "$q" ]; then exact+=("$r")
+    elif case "$n" in *"$q"*) true ;; *) false ;; esac; then subm+=("$r"); fi
+  done
+  if [ "${#exact[@]}" -gt 0 ]; then printf '%s\n' "${exact[@]}"
+  elif [ "${#subm[@]}" -gt 0 ]; then printf '%s\n' "${subm[@]}"; fi
 }
 
 # Resolve a unique repo root for a query. Prints the root on stdout, or exits
 # 3 (ambiguous, candidates on stderr) / 4 (none).
 resolve_repo_root() {  # $1 = query
-  local q r n
+  local q r hits
   scan_roots
-  [ "${#roots[@]}" -eq 0 ] && { echo "no git repos found under $GIT_ROOT" >&2; exit 4; }
+  [ "$((${#roots[@]} + ${#archived[@]}))" -eq 0 ] \
+    && { echo "no git repos found under $GIT_ROOT" >&2; exit 4; }
   q="$(lc "$1")"
-  local exact=() subm=()
-  for r in "${roots[@]}"; do
-    n="$(lc "$(basename "$r")")"
-    if [ "$n" = "$q" ]; then exact+=("$r")
-    elif case "$n" in *"$q"*) true ;; *) false ;; esac; then subm+=("$r"); fi
-  done
+
+  # Archived repos are a fallback tier, not a peer: `status-send` means the live
+  # one even though legacy/ holds a clone of the same name, but a query only the
+  # archive can satisfy still resolves.
   local matches=()
-  if [ "${#exact[@]}" -gt 0 ]; then matches=("${exact[@]}")
-  elif [ "${#subm[@]}" -gt 0 ]; then matches=("${subm[@]}")
-  else echo "no repo under $GIT_ROOT matches '$1'" >&2; exit 4; fi
+  hits="$(match_roots "$q" ${roots[@]+"${roots[@]}"})"
+  [ -n "$hits" ] || hits="$(match_roots "$q" ${archived[@]+"${archived[@]}"})"
+  while IFS= read -r r; do [ -n "$r" ] && matches+=("$r"); done <<< "$hits"
+
+  if [ "${#matches[@]}" -eq 0 ]; then
+    echo "no repo under $GIT_ROOT matches '$1'" >&2
+    exit 4
+  fi
   if [ "${#matches[@]}" -gt 1 ]; then
     echo "multiple repos match '$1' — be more specific:" >&2
     printf '  %s\n' "${matches[@]}" >&2
