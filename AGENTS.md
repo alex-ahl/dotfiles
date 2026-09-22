@@ -47,6 +47,11 @@ the README before changing anything under `scripts/` or `agents/`.
 | `scripts/lib/srt-settings.json` | srt | source only — deployed to `$USER-policy` |
 | `zsh/`, `tmux/`, `git/`, `ssh/`, `nvim/`, … | host | no, stowed into `$HOME` |
 
+Repos themselves live outside this tree, in `~/git/work/` or `~/git/personal/` —
+new clones go in one of those two. `~/git/legacy/` is the frozen pre-sandbox
+archive: it carries a `.repo-ignore` marker, which keeps it out of the pickers
+and makes `repo-resolve` reach it only when nothing live matches the name.
+
 ## Don't
 
 - Run `./install.sh` unasked. It restows the user's entire home, runs

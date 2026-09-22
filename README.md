@@ -235,7 +235,7 @@ include without a word, so the rules read as installed and route nothing.
 Audit it any time — the address every repo would actually commit under:
 
 ```sh
-for d in ~/git/*/; do
+for d in ~/git/*/*/; do
   git -C "$d" rev-parse --git-dir >/dev/null 2>&1 || continue
   printf '%-26s %s\n' "$(basename "$d")" "$(git -C "$d" config user.email)"
 done
@@ -269,7 +269,7 @@ which is how ~70 repos under `git/legacy/` ended up bare. After bulk-moving anyt
 `sv -r build` and check with:
 
 ```sh
-for d in /Users/Shared/sv-$USER/git/*/; do
+for d in /Users/Shared/sv-$USER/git/*/*/; do
   ls -lde "$d" | grep -qE "sandvault-$USER (inherited )?allow" || echo "no ACL: $d"
 done
 ```
