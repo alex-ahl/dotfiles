@@ -1,6 +1,20 @@
 # dotfiles
 
-Personal macOS dotfiles, managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Personal macOS dotfiles for a machine that runs coding agents behind a boundary the OS enforces:
+the agent runs as a separate UID that cannot read `$HOME`, its network is an allow-only domain
+list, and everything the host executes stays outside the tree the agent can write. The zsh, tmux,
+nvim and ghostty configs are the ordinary half — the sandbox plumbing is the part worth reading.
+
+[Install](#install-new-machine) ·
+[Homebrew packages](#homebrew-packages-brewfile) ·
+[What's tracked](#whats-tracked) ·
+[Scripts](#scripts-scripts) ·
+[Second brain](#second-brain-brain) ·
+[Not tracked](#not-tracked-set-up-manually-contain-secretsstate) ·
+[Where this repo lives](#where-this-repo-lives-configdotfiles) ·
+[Egress filtering](#egress-filtering-wsg_egress)
+
+Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 Each top-level dir is a stow "package" mirroring `$HOME`; `install.sh` symlinks them into
 place. Two exceptions: `scripts/` is symlinked whole to `~/.scripts`, and `agents/` is a
 container of per-agent packages (claude, and later opencode, …) stowed with
@@ -44,17 +58,31 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 Also enable iTerm2 shell integration if you use iTerm2 (`.zshrc` sources it if present).
 
+`--recurse-submodules` pulls `nvim/` from `alex-ahl/nvim`, i.e. *this* machine's Neovim config.
+Repoint the submodule in `.gitmodules` at your own, or clone without it and stow the rest.
+
 ## Homebrew packages (`Brewfile`)
 
-The `Brewfile` lists all taps, formulae, casks, and Mac App Store apps. Refresh it after
-installing/removing packages, then commit:
+The `Brewfile` lists all taps, formulae, casks, Mac App Store apps, Go packages and npm
+packages. Install/upgrade from it: `brew bundle --file=~/.config/dotfiles/Brewfile`.
+
+Refresh it by dumping to a scratch file and porting the differences by hand — **never dump
+straight over the tracked file**:
 
 ```sh
-brew bundle dump --file=~/.config/dotfiles/Brewfile --force --describe
+brew bundle dump --file=/tmp/Brewfile.new --force
+diff /tmp/Brewfile.new Brewfile
 ```
 
-Install/upgrade from it: `brew bundle --file=~/.config/dotfiles/Brewfile`.
-Remove anything not in the Brewfile: `brew bundle cleanup --file=~/.config/dotfiles/Brewfile`.
+Two reasons the dump is not the file. It reflects what is *installed*, so it re-adds anything
+that deliberately lives in `Brewfile.local` (see "Not tracked") — this repo is public, and that
+is how a private-repo package finds its way back in. And `--describe`, which generated the
+per-package comments here, is disabled in current Homebrew, so a dump flattens them all; the
+comments are maintained by hand now.
+
+`brew bundle cleanup --file=…` removes anything not in the file it is given, and it takes only
+one. Run against `Brewfile` it will offer to uninstall your `Brewfile.local` packages — check
+its list before agreeing.
 
 ## What's tracked
 
@@ -157,7 +185,7 @@ worktrees that produced them.
 
 Lives outside every repo for the same reason `~/handoffs` does: entries must survive `wt-prune`
 removing the worktree, and are shared across accounts. The write path is pre-authorised in the
-`agents/claude` package's `settings.json` (`Edit(//Users/alex/brain/**)` +
+`agents/claude` package's `settings.json` (`Edit(//Users/$USER/brain/**)` +
 `additionalDirectories`), so entries land without permission prompts.
 
 `/start-day` is the other bookend: it reads both brains' logs and TODOs, working state, live wsg
@@ -294,10 +322,14 @@ When the agent reports a blocked host, add it, commit, and deploy — the commit
 record, the deploy is what srt actually reads:
 
 ```sh
-jq '.network.allowedDomains |= (. + ["example.com"] | unique)' \
+jq '.network.allowedDomains |= (. + ["example.com", "*.example.com"] | unique)' \
   scripts/lib/srt-settings.json > /tmp/s && mv /tmp/s scripts/lib/srt-settings.json
 scripts/deploy-runtime.sh
 ```
+
+Add both forms. A wildcard does not cover the apex and the apex does not cover subdomains, so
+one alone leaves half the host still blocked — which reads as a fresh egress failure rather than
+a half-finished entry. Every pair already in the file is there for that reason.
 
 srt reads its settings once at startup, so a new domain applies to the next pane, not a running one.
 Deliberately: `--control-fd` would hot-swap the allowlist live (the proxy re-reads
