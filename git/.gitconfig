@@ -1,9 +1,11 @@
 # This is Git's per-user configuration file.
+#
+# The default identity is the personal one, deliberately: a repo that matches no
+# rule gets the address that is safe to publish. Work identities are conditional
+# and live in ~/.gitconfig.local, which is not tracked — see README, "Not tracked".
 [user]
 	name = Alexander Åhl
-# Identity and any employer-specific settings live in ~/.gitconfig.local, which
-# is not tracked here. A missing include is not an error, so this file stands
-# alone on a fresh machine — set user.email there before your first commit.
+	email = 7934262+alex-ahl@users.noreply.github.com
 [include]
 	path = ~/.gitconfig.local
 [credential "https://github.com"]

@@ -207,13 +207,37 @@ credentials), `.config/zellij`, `.config/opencode`, sol binary state, and the le
 iTerm2 `~/git/scripts/workspace.sh`. Nothing here points at it: it lives in the share, so the
 sandbox can rewrite it, and anything host-executed there is an escape.
 
-**`~/.gitconfig.local`** — included from the tracked `~/.gitconfig`, and the only place your
-`user.email` lives. This repo is public, so the commit identity and any employer-specific
-settings (an Azure DevOps `useHttpPath`, say) stay out of it. Git treats a missing include as
-a no-op, so a fresh machine works until you write the file:
+**`~/.gitconfig.local`** — included from the tracked `~/.gitconfig`, and where the work
+identities live. The tracked file sets the *personal* address as the default on purpose: a repo
+matching no rule then commits under the address that is safe to publish, so forgetting produces
+the harmless outcome rather than the leaky one.
 
-    [user]
-        email = you@example.com
+Work identity is keyed off the repo's **remote**, not its path — the remote is what actually
+says whose repo it is, it needs no per-repo setup, and it keeps pointing at the old employer
+after you change jobs, which is what the history of those repos wants:
+
+    [includeIf "hasconfig:remote.*.url:git@github.com:<org>/**"]
+        path = ~/.gitconfig.<org>
+    [includeIf "hasconfig:remote.*.url:https://github.com/<org>/**"]
+        path = ~/.gitconfig.<org>
+
+with `~/.gitconfig.<org>` holding that job's `[user] email` and anything else it needs. Both URL
+forms, since a repo cloned over HTTPS matches neither pattern otherwise. A path rule
+(`gitdir:~/git/work/`) is the obvious alternative and silently does **not** work here: `~/git` is
+a symlink into the share, and git resolves it before matching, so only the physical
+`/Users/Shared/sv-$USER/git/...` would fire.
+
+Git treats a missing include as a no-op, so a fresh machine commits as the personal default
+until you write these.
+
+Audit it any time — the address every repo would actually commit under:
+
+```sh
+for d in ~/git/*/; do
+  git -C "$d" rev-parse --git-dir >/dev/null 2>&1 || continue
+  printf '%-26s %s\n' "$(basename "$d")" "$(git -C "$d" config user.email)"
+done
+```
 
 **`Brewfile.local`** — same idea for packages that come from private repos (a `go` install off a
 private org, say). Gitignored, and `install.sh` bundles it after the public `Brewfile` when the
