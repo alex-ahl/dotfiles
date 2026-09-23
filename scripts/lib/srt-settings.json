@@ -10,11 +10,8 @@
       "files.pythonhosted.org",
       "github.com",
       "google.se",
-      "one-sec.app",
       "pypi.org",
       "registry.npmjs.org",
-      "screenzen.co",
-      "tutorials.one-sec.app",
       "www.google.se"
     ],
     "deniedDomains": [
