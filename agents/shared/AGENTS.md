@@ -86,6 +86,13 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   launching any background or parallel agent work, say what you'd run and get an
   explicit go-ahead first.
 
+- **Docs state, they don't justify.** In anything written to be read as
+  documentation — README, guide, ticket, PR description — give the requirement,
+  the step, or the behaviour, and stop. Don't append why it exists or which
+  internal detail forces it: "Neovim 0.12+", not "Neovim 0.12+ because grR calls
+  `:lsp`". Rationale belongs in commit messages and code comments, next to the
+  thing it explains.
+
 - **Be brief.** Lead with the answer; cut preamble, hedging, and restating the
   question. Expand only when asked or when the task genuinely needs it.
 
