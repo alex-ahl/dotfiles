@@ -42,6 +42,13 @@ and a section per language invites filling it for symmetry's sake.
   scripts) may carry explanatory comments, still terse. Match the comment density
   of the surrounding file.
 
+- **A comment explains why the code is *this way*, not why it exists.**
+  Constraints, gotchas and rejected alternatives belong next to the code; the
+  problem that motivated the change belongs in the commit message. Test: if the
+  comment would be equally true of a completely different implementation, it
+  isn't a comment. When an edit comes from a handoff or a plan, its "Why"
+  section stays behind.
+
 ## Testing
 
 _No rules yet._
