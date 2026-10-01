@@ -56,4 +56,6 @@ for a in 1 2; do
                       "$SBHOME/.claude-account$a/settings.json"
 done
 
+sv shell -- git config --global merge.ff only
+
 echo "sandvault: $SHARE shared, sandbox home wired"

@@ -6,6 +6,10 @@
 [user]
 	name = Alexander Åhl
 	email = 7934262+alex-ahl@users.noreply.github.com
+[merge]
+	ff = only
+[pull]
+	rebase = true
 [include]
 	path = ~/.gitconfig.local
 [credential "https://github.com"]
