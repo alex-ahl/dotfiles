@@ -158,7 +158,7 @@ tmux -L wsg set-option -t "$S" @wsg_egress 1   # 0 to run the session unfiltered
 ```
 
 `wt-rehome.sh` — start a fresh worktree + wsg session from the current one,
-carrying your in-progress work. Bound to `prefix + M` (prompts for the new
+carrying your in-progress work. Bound to `prefix + B` (prompts for the new
 name). Behaviour depends on the current branch's PR state (`gh pr view`):
 - **merged** → new worktree off the latest default branch; changes **move** to
   it; the old worktree + session are **torn down** (the old session's Claude
