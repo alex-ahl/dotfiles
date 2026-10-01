@@ -17,25 +17,10 @@
 set -Eeuo pipefail
 
 . "$(dirname "$0")/lib/agent.sh"
+. "$(dirname "$0")/lib/session-name.sh"
 
-# --- Workspace name derivation (mirrors ../workspace.sh) ---
-common=$(git rev-parse --git-common-dir 2>/dev/null || true)
-if [ -n "$common" ] && \
-   [ "$(git -C "$common" rev-parse --is-bare-repository 2>/dev/null || true)" = "true" ]; then
-  common_abs=$(cd "$common" && pwd)
-  root=$(basename "$(dirname "$common_abs")")
-  leaf=$(basename "$PWD")
-  if [ "$PWD" = "$(dirname "$common_abs")" ] || [ "$leaf" = "$root" ]; then
-    WS="$root"
-  else
-    WS="$root/$leaf"
-  fi
-else
-  WS=$(basename "$PWD")
-fi
-
-# tmux session names can't contain "." (used for window/pane targets).
-SESSION="${WS//./_}"
+WS="$(ws_name "$PWD")"
+SESSION="$(session_name "$PWD")"
 
 TMUX_CONF="$HOME/.config/tmux/tmux.conf"
 GHOSTTY_CFG="$HOME/.config/ghostty/base.conf"
