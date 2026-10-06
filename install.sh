@@ -56,7 +56,7 @@ git submodule update --init --recursive
 # Existing real dirs (e.g. ~/.claude) are descended into; missing dirs (e.g.
 # ~/.config/nvim) are folded into a single dir symlink.
 stow -t "$HOME" \
-  zsh git ssh harlequin docker ghostty tmux karabiner worktrunk nvim
+  zsh git ssh harlequin ghostty tmux karabiner worktrunk nvim
 
 # Sol separately. It rewrites config.json by atomic replace, so the stow symlink
 # becomes a real file within seconds of launch — which is why a plain stow here
