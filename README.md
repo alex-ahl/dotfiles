@@ -57,7 +57,8 @@ Repoint the submodule in `.gitmodules` at your own, or clone without it and stow
 `./install.sh` also runs on Linux, with or without a GUI. It installs `Brewfile.linux`, stows
 everything except `karabiner` and `sol`, links the agent configs and `~/.scripts`, and skips the
 sandbox. Agents in workspace panes run unsandboxed, and `wsg` attaches in the current terminal
-instead of opening Ghostty. tmux copies to the clipboard over OSC 52.
+instead of opening Ghostty. An interactive ssh login lands in the tmux `home` session in `~/git`,
+and tmux copies to the clipboard over OSC 52.
 
 ```sh
 # 0. If your user lacks sudo: grant it (asks for the root password), then

@@ -171,8 +171,10 @@ else
 fi
 
 # --- sandbox ----------------------------------------------------------------
-# sandvault + srt are macOS-only.
+# sandvault + srt are macOS-only. On the Mac ~/git links into the share; here
+# it is a plain dir, with the two roots the repo pickers and new-repo.sh use.
 if [ "$OS" != Darwin ]; then
+  mkdir -p "$HOME/git/personal" "$HOME/git/work"
   ok "dotfiles installed — restart your shell (or: exec zsh)"
   exit 0
 fi

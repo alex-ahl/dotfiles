@@ -1,3 +1,14 @@
+# An interactive ssh login lands in the tmux home session, as a Ghostty window
+# does on the Mac. Non-interactive ssh (scp, rsync, `ssh host cmd`) is
+# untouched. Detaching ends the connection; if tmux fails to start, the plain
+# shell stays instead.
+if [[ -n $SSH_CONNECTION && -z $TMUX && -o interactive ]] && (( $+commands[tmux] )); then
+  # Ghostty sends TERM=xterm-ghostty, which a remote box rarely has terminfo
+  # for, and tmux won't start without it.
+  infocmp $TERM &>/dev/null || export TERM=xterm-256color
+  ~/.scripts/start-tmux.sh && exit
+fi
+
 # tmux chdirs a pane to the resolved path, so a shell opened in the sandvault
 # share starts at /Users/Shared/sv-$USER/... and the prompt shows all of it.
 # Re-enter the same directory through the ~/git, ~/brain, ~/handoffs symlinks
