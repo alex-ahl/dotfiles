@@ -134,6 +134,13 @@ anything in `scripts/shared/`; then `prefix + R` for a policy change to reach a 
 (`start-tmux.sh`, `workspace.sh`, `wt-session.sh`, `kill-session.sh`, `git-status.sh`).
 Aliases `wsg`, `cb`, `cwt`, `wtp` (in `.zshrc`) point here.
 
+`new-repo.sh` — create a GitHub repo and open it as a workspace. Bound to `prefix + G`. Prompts
+for owner (your account or one of your orgs), name, and private or public; creates it with a
+README on `master` plus a `development` branch (the default), clones it bare into `~/git/personal/` (your
+account) or `~/git/work/` (an org), and opens a `development` worktree. Rulesets make both branches
+undeletable and block force pushes to `master`. A private repo on a GitHub Free owner gets no
+rulesets — the popup warns and carries on.
+
 `wt-prune.sh` (`wtp`) — sweep all wsg sessions and clean up finished ones: a
 branch with a merged PR (`gh`) or a gone upstream gets its worktree removed +
 session killed; a regular (non-worktree) repo is switched back to the default
