@@ -143,16 +143,6 @@ alias cb=~/.scripts/clone-bare.sh
 alias cwt=~/.scripts/check-worktrees.sh
 alias wtp=~/.scripts/wt-prune.sh
 
-# share_history only takes in other shells' commands when this one runs a
-# command, so Ctrl-R right after switching panes missed them. Read new entries
-# from the history file first.
-_history_search_fresh() {
-  fc -RI
-  zle history-incremental-search-backward
-}
-zle -N _history_search_fresh
-bindkey '^R' _history_search_fresh
-
 # F12 in tmux passes every key to a nested tmux over ssh. Once that ssh ends,
 # take the keys back for this pane's session; otherwise they keep going to
 # this plain shell and no tmux binding works.
