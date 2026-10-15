@@ -62,15 +62,18 @@ instead of opening Ghostty. tmux copies to the clipboard over OSC 52.
 ```sh
 # 1. System packages: Homebrew's prerequisites, plus zsh as the login shell
 #    (Debian/Ubuntu; on other distros install the equivalents)
-sudo apt-get install build-essential procps curl file git zsh
+sudo apt-get install build-essential procps curl file git zsh openssh-server
 chsh -s "$(command -v zsh)"
 
 # 2. Homebrew — same installer as macOS; it lands in /home/linuxbrew/.linuxbrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 3. Clone + install, as on macOS. The SSH URL needs a key added to GitHub;
-#    the https:// URL works without one.
-git clone --recurse-submodules git@github.com:<you>/dotfiles.git ~/.config/dotfiles
+# 3. From the Mac: authorize its key, so you can ssh in
+ssh-copy-id <user>@<host>
+
+# 4. Clone over https (the box has no GitHub key) + install
+git -c url.https://github.com/.insteadOf=git@github.com: \
+  clone --recurse-submodules https://github.com/<you>/dotfiles.git ~/.config/dotfiles
 ~/.config/dotfiles/install.sh
 exec zsh
 ```

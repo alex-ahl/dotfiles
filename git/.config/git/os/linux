@@ -6,3 +6,7 @@
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !gh auth git-credential
+# No GitHub ssh key on Linux boxes: fetch git@github.com URLs (the nvim
+# submodule, clone-bare's ssh remotes) over https instead.
+[url "https://github.com/"]
+	insteadOf = git@github.com:
