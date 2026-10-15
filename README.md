@@ -60,6 +60,10 @@ sandbox. Agents in workspace panes run unsandboxed, and `wsg` attaches in the cu
 instead of opening Ghostty. tmux copies to the clipboard over OSC 52.
 
 ```sh
+# 0. If your user lacks sudo: grant it (asks for the root password), then
+#    log out and back in
+su - -c "apt-get install -y sudo && usermod -aG sudo $USER"
+
 # 1. System packages: Homebrew's prerequisites, plus zsh as the login shell
 #    (Debian/Ubuntu; on other distros install the equivalents)
 sudo apt-get install build-essential procps curl file git zsh openssh-server
@@ -79,6 +83,10 @@ exec zsh
 ```
 
 Then `gh auth login` — the device-code flow needs no local browser.
+
+`install.sh` moves any existing file it would otherwise conflict with (e.g. `~/.gitconfig`) to
+`<name>.pre-dotfiles.<timestamp>` and says so. Settings worth keeping from an old `~/.gitconfig`
+go in `~/.gitconfig.local`.
 
 ## Homebrew packages (`Brewfile`)
 
