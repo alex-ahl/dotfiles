@@ -22,7 +22,8 @@ if [ "$target" = home ]; then
 fi
 
 if [ "$target" = "$cur" ]; then
-  "$TMUX_BIN" new-session -dA -s home -n shell -c "$HOME/git"
+  "$TMUX_BIN" has-session -t home 2>/dev/null || \
+    "$TMUX_BIN" new-session -d -s home -n shell -c "$HOME/git"
   "$TMUX_BIN" switch-client -t home
 fi
 
