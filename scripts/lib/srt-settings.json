@@ -10,6 +10,10 @@
       "files.pythonhosted.org",
       "github.com",
       "google.se",
+      "hf.co",
+      "*.hf.co",
+      "huggingface.co",
+      "*.huggingface.co",
       "pypi.org",
       "registry.npmjs.org",
       "www.google.se"
