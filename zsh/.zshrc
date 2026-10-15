@@ -153,6 +153,18 @@ _history_search_fresh() {
 zle -N _history_search_fresh
 bindkey '^R' _history_search_fresh
 
+# F12 in tmux passes every key to a nested tmux over ssh. Once that ssh ends,
+# take the keys back for this pane's session; otherwise they keep going to
+# this plain shell and no tmux binding works.
+_tmux_ssh_preexec() { [[ $1 == ssh || $1 == "ssh "* ]] && _tmux_after_ssh=1 }
+_tmux_ssh_precmd() {
+  (( ${_tmux_after_ssh:-0} )) || return
+  _tmux_after_ssh=0
+  [[ -n $TMUX ]] && tmux set -t "$TMUX_PANE" -u prefix \; set -t "$TMUX_PANE" -u key-table \; refresh-client -S
+}
+preexec_functions+=(_tmux_ssh_preexec)
+precmd_functions+=(_tmux_ssh_precmd)
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
