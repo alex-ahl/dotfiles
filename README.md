@@ -111,7 +111,6 @@ its list before agreeing.
 | `git`      | `~/.gitconfig`, `~/.config/git/ignore`, `~/.config/git/os/` (per-OS credential helpers; `install.sh` links the matching one as `~/.gitconfig.os`) |
 | `ssh`      | `~/.ssh/config` (no keys)                                   |
 | `harlequin`| `~/.harlequin.toml`                                         |
-| `docker`   | `~/.docker/config.json`, `~/.docker/daemon.json` (no auths) |
 | `ghostty`  | `~/.config/ghostty/config`, `~/.config/ghostty/base.conf`   |
 | `tmux`     | `~/.config/tmux/tmux.conf`                                  |
 | `karabiner`| `~/.config/karabiner/karabiner.json` (macOS only)           |
