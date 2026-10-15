@@ -1,0 +1,26 @@
+# Linux subset of Brewfile: formulae only (casks are macOS-only), limited to what
+# these dotfiles use. Install: brew bundle --file=~/.config/dotfiles/Brewfile.linux
+#
+# Symlink farm manager (install.sh)
+brew "stow"
+# Terminal multiplexer
+brew "tmux"
+# Command-line fuzzy finder (tmux pickers)
+brew "fzf"
+# JSON processor
+brew "jq"
+# GitHub CLI (git credential helper)
+brew "gh"
+# Ambitious Vim-fork focused on extensibility and agility
+brew "neovim"
+# Search tools used by the nvim config
+brew "ripgrep"
+brew "fd"
+# Parser generator tool (nvim-treesitter)
+brew "tree-sitter-cli"
+# JavaScript runtime (Claude Code, LSPs)
+brew "node"
+# Simple terminal UI for git commands
+brew "lazygit", link: false
+# CLI for Git worktree management, designed for parallel AI agent workflows
+brew "worktrunk"

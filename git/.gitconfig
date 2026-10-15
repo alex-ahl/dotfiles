@@ -12,12 +12,7 @@
 	rebase = true
 [include]
 	path = ~/.gitconfig.local
-[credential "https://github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
-[credential "https://gist.github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
-[credential]
-	helper = 
-	helper = /usr/local/share/gcm-core/git-credential-manager
+# Credential helpers differ per OS; install.sh links ~/.gitconfig.os to the
+# matching file under ~/.config/git/os/.
+[include]
+	path = ~/.gitconfig.os

@@ -6,6 +6,7 @@ list, and everything the host executes stays outside the tree the agent can writ
 nvim and ghostty configs are the ordinary half — the sandbox plumbing is the part worth reading.
 
 [Install](#install-new-machine) ·
+[Linux](#linux) ·
 [Homebrew packages](#homebrew-packages-brewfile) ·
 [What's tracked](#whats-tracked) ·
 [Scripts](#scripts-scripts) ·
@@ -44,24 +45,42 @@ One step is left to you, because it holds live tokens: create
 `/Users/Shared/sv-$USER/user/.zshenv` from inside `sv shell` — see "Not tracked" below.
 `install.sh` says so if it is missing.
 
-Not covered by Homebrew (install separately if you want them):
-
-```sh
-# oh-my-zsh + powerlevel10k
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-  "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-# nvm, Rust (referenced by .zshrc)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
+`install.sh` also clones oh-my-zsh and powerlevel10k and installs nvm, each only if missing.
 
 Also enable iTerm2 shell integration if you use iTerm2 (`.zshrc` sources it if present).
 
 `--recurse-submodules` pulls `nvim/` from `alex-ahl/nvim`, i.e. *this* machine's Neovim config.
 Repoint the submodule in `.gitmodules` at your own, or clone without it and stow the rest.
 
+## Linux
+
+`./install.sh` also runs on Linux, with or without a GUI. It installs `Brewfile.linux`, stows
+everything except `karabiner` and `sol`, links the agent configs and `~/.scripts`, and skips the
+sandbox. Agents in workspace panes run unsandboxed, and `wsg` attaches in the current terminal
+instead of opening Ghostty. tmux copies to the clipboard over OSC 52.
+
+```sh
+# 1. System packages: Homebrew's prerequisites, plus zsh as the login shell
+#    (Debian/Ubuntu; on other distros install the equivalents)
+sudo apt-get install build-essential procps curl file git zsh
+chsh -s "$(command -v zsh)"
+
+# 2. Homebrew — same installer as macOS; it lands in /home/linuxbrew/.linuxbrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 3. Clone + install, as on macOS. The SSH URL needs a key added to GitHub;
+#    the https:// URL works without one.
+git clone --recurse-submodules git@github.com:<you>/dotfiles.git ~/.config/dotfiles
+~/.config/dotfiles/install.sh
+exec zsh
+```
+
+Then `gh auth login` — the device-code flow needs no local browser.
+
 ## Homebrew packages (`Brewfile`)
+
+`Brewfile.linux` is the Linux subset — formulae only, limited to what these dotfiles use; add
+to it by hand.
 
 The `Brewfile` lists all taps, formulae, casks, Mac App Store apps, Go packages and npm
 packages. Install/upgrade from it: `brew bundle --file=~/.config/dotfiles/Brewfile`.
@@ -89,15 +108,15 @@ its list before agreeing.
 | Package    | Links to                                                    |
 |------------|-------------------------------------------------------------|
 | `zsh`      | `~/.zshrc .zshenv .zprofile .profile .p10k.zsh`             |
-| `git`      | `~/.gitconfig`, `~/.config/git/ignore`                      |
+| `git`      | `~/.gitconfig`, `~/.config/git/ignore`, `~/.config/git/os/` (per-OS credential helpers; `install.sh` links the matching one as `~/.gitconfig.os`) |
 | `ssh`      | `~/.ssh/config` (no keys)                                   |
 | `harlequin`| `~/.harlequin.toml`                                         |
 | `docker`   | `~/.docker/config.json`, `~/.docker/daemon.json` (no auths) |
 | `ghostty`  | `~/.config/ghostty/config`, `~/.config/ghostty/base.conf`   |
 | `tmux`     | `~/.config/tmux/tmux.conf`                                  |
-| `karabiner`| `~/.config/karabiner/karabiner.json`                        |
+| `karabiner`| `~/.config/karabiner/karabiner.json` (macOS only)           |
 | `worktrunk`| `~/.config/worktrunk/config.toml`                           |
-| `sol`      | `~/.config/sol/config.json`                                 |
+| `sol`      | `~/.config/sol/config.json` (macOS only)                    |
 | `agents/claude` | `settings.json` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`), plus `.claude/agents/`. `commands/`, `skills/` and `CLAUDE.md` are symlinked by `agents/install.sh`, not stowed. Plain `~/.claude` gets `CLAUDE.md` only — `sv` installs its own skill under `~/.claude/skills`, and a dir symlink there would hide it and send sv's next write into this repo |
 | `nvim`     | `~/.config/nvim` (git submodule → `alex-ahl/nvim`)          |
 | `scripts`  | `~/.scripts` (symlinked dir, on PATH-style use)             |

@@ -1,0 +1,8 @@
+# Linux credential helpers, linked as ~/.gitconfig.os by install.sh.
+# gh only — GCM needs a desktop keyring a headless box doesn't have.
+[credential "https://github.com"]
+	helper = 
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !gh auth git-credential

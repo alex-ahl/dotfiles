@@ -14,6 +14,16 @@ step() { printf "${BLUE}==>${NOFORMAT} %s\n" "$1"; }
 ok()   { printf "${GREEN}==>${NOFORMAT} %s\n" "$1"; }
 warn() { printf "${YELLOW}  ! %s${NOFORMAT}\n" "$1" >&2; }
 
+# macOS gets the full Brewfile, the Mac-only apps and the sandbox; Linux gets
+# Brewfile.linux and the rest.
+OS=$(uname -s)
+
+# Linuxbrew's installer doesn't touch the current shell's PATH, so a first run
+# straight after it would otherwise see no brew.
+if ! command -v brew >/dev/null && [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
 # Install Homebrew packages from the Brewfile (skip with NO_BREW=1); this also
 # installs stow itself. Idempotent.
 #
@@ -24,7 +34,11 @@ warn() { printf "${YELLOW}  ! %s${NOFORMAT}\n" "$1" >&2; }
 #
 # Non-fatal: set -e made a single cask that fails to upgrade veto everything
 # below it — the stow and the sandbox deploy, which are the part that matters.
-if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
+if [ "$OS" != Darwin ] && [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
+  step "Homebrew packages"
+  brew bundle --no-upgrade --file="$PWD/Brewfile.linux" \
+    || warn "brew bundle failed — continuing with stow"
+elif [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
   step "Homebrew packages"
   # The Brewfile taps two third-party taps, and brew refuses to even check a
   # formula from an untrusted one — which failed the whole bundle. Granted per
@@ -44,7 +58,10 @@ if [ -z "${NO_BREW:-}" ] && command -v brew >/dev/null; then
   fi
 fi
 
-command -v stow >/dev/null || { warn "stow not found — run: brew install stow"; exit 1; }
+if ! command -v stow >/dev/null; then
+  warn "stow not found — install Homebrew (README, \"Install\"), then re-run"
+  exit 1
+fi
 
 step "Dotfiles"
 
@@ -55,22 +72,47 @@ git submodule update --init --recursive
 # ~/.config, outside the share (see README, "Where this repo lives").
 # Existing real dirs (e.g. ~/.claude) are descended into; missing dirs (e.g.
 # ~/.config/nvim) are folded into a single dir symlink.
-stow -t "$HOME" \
-  zsh git ssh harlequin ghostty tmux karabiner worktrunk nvim
+# A fresh Linux home carries /etc/skel copies (.profile on Debian), which stow
+# won't replace. Drop only byte-identical ones; an edited file still conflicts.
+if [ "$OS" != Darwin ] && [ -d /etc/skel ]; then
+  for f in zsh/.[!.]*; do
+    f=${f#zsh/}
+    [ -f "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && cmp -s "$HOME/$f" "/etc/skel/$f" \
+      && rm "$HOME/$f"
+  done
+fi
 
-# Sol separately. It rewrites config.json by atomic replace, so the stow symlink
-# becomes a real file within seconds of launch — which is why a plain stow here
-# aborts on a conflict. mkdir first: without an existing dir stow folds the whole
-# of ~/.config/sol, and Sol keeps real state there (mmkv, state.json) that has no
-# business in the repo. --adopt takes the app's file back and restores the link.
-# skip-worktree then keeps Sol's history/frequencies churn out of git status —
-# the committed copy is a settings seed for a fresh machine, not a live mirror.
-# To capture a setting change deliberately:
-#   git update-index --no-skip-worktree sol/.config/sol/config.json
-#   git add -p && git update-index --skip-worktree sol/.config/sol/config.json
-mkdir -p "$HOME/.config/sol"
-stow --adopt -t "$HOME" sol
-git update-index --skip-worktree sol/.config/sol/config.json
+# Pre-create ~/.ssh: a missing one is folded into a link into this repo, and
+# ssh-keygen and known_hosts would then write into a public tree.
+mkdir -p -m 700 "$HOME/.ssh"
+
+stow -t "$HOME" \
+  zsh git ssh harlequin ghostty tmux worktrunk nvim
+
+# Per-OS git credential helpers, included by ~/.gitconfig.
+case "$OS" in
+  Darwin) ln -sfn "$HOME/.config/git/os/darwin" "$HOME/.gitconfig.os" ;;
+  *)      ln -sfn "$HOME/.config/git/os/linux"  "$HOME/.gitconfig.os" ;;
+esac
+
+# macOS-only apps.
+if [ "$OS" = Darwin ]; then
+  stow -t "$HOME" karabiner
+
+  # Sol separately. It rewrites config.json by atomic replace, so the stow symlink
+  # becomes a real file within seconds of launch — which is why a plain stow here
+  # aborts on a conflict. mkdir first: without an existing dir stow folds the whole
+  # of ~/.config/sol, and Sol keeps real state there (mmkv, state.json) that has no
+  # business in the repo. --adopt takes the app's file back and restores the link.
+  # skip-worktree then keeps Sol's history/frequencies churn out of git status —
+  # the committed copy is a settings seed for a fresh machine, not a live mirror.
+  # To capture a setting change deliberately:
+  #   git update-index --no-skip-worktree sol/.config/sol/config.json
+  #   git add -p && git update-index --skip-worktree sol/.config/sol/config.json
+  mkdir -p "$HOME/.config/sol"
+  stow --adopt -t "$HOME" sol
+  git update-index --skip-worktree sol/.config/sol/config.json
+fi
 
 # Agent configs live under agents/ so multiple agents (claude, opencode, ...)
 # can be sibling packages. Stow with agents/ as the stow dir, so e.g.
@@ -90,13 +132,51 @@ else
   ln -sfn "$PWD/scripts" "$HOME/.scripts"
 fi
 
+step "Shell"
+
+# oh-my-zsh, powerlevel10k and nvm: cloned once, then left to their own
+# updaters. Not oh-my-zsh's installer — it replaces ~/.zshrc and execs a shell.
+# PROFILE=/dev/null keeps nvm's installer out of the rc files; .zshrc loads it.
+# Non-fatal, like brew: a network hiccup shouldn't veto the agent and sandbox steps.
+[ -d "$HOME/.oh-my-zsh" ] || \
+  git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh" \
+  || warn "oh-my-zsh clone failed"
+P10K="$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+[ -d "$P10K" ] || \
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K" \
+  || warn "powerlevel10k clone failed"
+[ -d "$HOME/.nvm" ] || \
+  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh \
+    | PROFILE=/dev/null bash \
+  || warn "nvm install failed"
+
 step "Agent configs"
 
 # Link shared agent commands + skills into each agent's config dirs.
 # Not stow — targets live inside runtime dirs.
 "$PWD/agents/install.sh"
 
+# Commit identity. The tracked ~/.gitconfig defaults to the personal address, and
+# ~/.gitconfig.local adds a rule per employer org, keyed off the repo's remote
+# (README, "Not tracked"). It holds the org name, so it cannot live in this repo.
+if [ ! -f "$HOME/.gitconfig.local" ]; then
+  warn "no ~/.gitconfig.local — work repos will commit as the personal address (fine if this machine has none)"
+else
+  # An include pointing at a file that does not exist is a silent no-op in git:
+  # the rules read as installed and route nothing. Worth one stat each.
+  awk -F= '/^[[:space:]]*path[[:space:]]*=/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}' \
+    "$HOME/.gitconfig.local" | while IFS= read -r inc; do
+    [ -f "${inc/#\~/$HOME}" ] || warn "~/.gitconfig.local includes $inc, which does not exist"
+  done
+fi
+
 # --- sandbox ----------------------------------------------------------------
+# sandvault + srt are macOS-only.
+if [ "$OS" != Darwin ]; then
+  ok "dotfiles installed — restart your shell (or: exec zsh)"
+  exit 0
+fi
+
 # One command for a new machine, and the same command afterwards: every step is
 # guarded, so a re-run costs a couple of stats and changes nothing. Order is
 # load-bearing — the share has to exist before the runtime is deployed into it,
@@ -140,20 +220,6 @@ fi
 # that. It costs ~2.4s of `sv shell` round-trips and is idempotent.
 if [ -d "$SHARE" ]; then
   "$PWD/scripts/sandvault-sync.sh"
-fi
-
-# Commit identity. The tracked ~/.gitconfig defaults to the personal address, and
-# ~/.gitconfig.local adds a rule per employer org, keyed off the repo's remote
-# (README, "Not tracked"). It holds the org name, so it cannot live in this repo.
-if [ ! -f "$HOME/.gitconfig.local" ]; then
-  warn "no ~/.gitconfig.local — work repos will commit as the personal address (fine if this machine has none)"
-else
-  # An include pointing at a file that does not exist is a silent no-op in git:
-  # the rules read as installed and route nothing. Worth one stat each.
-  awk -F= '/^[[:space:]]*path[[:space:]]*=/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}' \
-    "$HOME/.gitconfig.local" | while IFS= read -r inc; do
-    [ -f "${inc/#\~/$HOME}" ] || warn "~/.gitconfig.local includes $inc, which does not exist"
-  done
 fi
 
 # The things install.sh cannot do for you.
