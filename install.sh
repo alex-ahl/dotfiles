@@ -72,32 +72,22 @@ git submodule update --init --recursive
 # ~/.config, outside the share (see README, "Where this repo lives").
 # Existing real dirs (e.g. ~/.claude) are descended into; missing dirs (e.g.
 # ~/.config/nvim) are folded into a single dir symlink.
+# A fresh Linux home carries /etc/skel copies (.profile on Debian), which stow
+# won't replace. Drop only byte-identical ones; an edited file still conflicts.
+if [ "$OS" != Darwin ] && [ -d /etc/skel ]; then
+  for f in zsh/.[!.]*; do
+    f=${f#zsh/}
+    [ -f "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && cmp -s "$HOME/$f" "/etc/skel/$f" \
+      && rm "$HOME/$f"
+  done
+fi
+
 # Pre-create ~/.ssh: a missing one is folded into a link into this repo, and
 # ssh-keygen and known_hosts would then write into a public tree.
 mkdir -p -m 700 "$HOME/.ssh"
 
-# Stow refuses to replace a file it doesn't own — a distro's /etc/skel
-# .profile, a ~/.gitconfig written by an earlier `git config --global`. Move
-# those aside so a fresh machine stows in one pass; nothing is deleted.
-# Directories are left alone: stow descends into real ones.
-backup_conflicts() {  # $1 = package dir
-  local rel dst stamp
-  stamp=$(date +%Y%m%d%H%M%S)
-  (cd "$1" && find . -name .git -prune -o \( -type f -o -type l \) -print) |
-  while IFS= read -r rel; do
-    rel=${rel#./}; dst="$HOME/$rel"
-    [ -e "$dst" ] || [ -L "$dst" ] || continue
-    [ -d "$dst" ] && [ ! -L "$dst" ] && continue
-    # Already ours, directly or through a folded parent dir link.
-    [ "$(realpath "$dst" 2>/dev/null)" = "$(realpath "$1/$rel")" ] && continue
-    mv "$dst" "$dst.pre-dotfiles.$stamp"
-    warn "moved existing ~/$rel aside to ~/$rel.pre-dotfiles.$stamp"
-  done
-}
-
-PKGS="zsh git ssh harlequin ghostty tmux worktrunk nvim"
-for p in $PKGS; do backup_conflicts "$p"; done
-stow -t "$HOME" $PKGS
+stow -t "$HOME" \
+  zsh git ssh harlequin ghostty tmux worktrunk nvim
 
 # Per-OS git credential helpers, included by ~/.gitconfig.
 case "$OS" in

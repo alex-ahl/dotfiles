@@ -84,10 +84,6 @@ exec zsh
 
 Then `gh auth login` — the device-code flow needs no local browser.
 
-`install.sh` moves any existing file it would otherwise conflict with (e.g. `~/.gitconfig`) to
-`<name>.pre-dotfiles.<timestamp>` and says so. Settings worth keeping from an old `~/.gitconfig`
-go in `~/.gitconfig.local`.
-
 ## Homebrew packages (`Brewfile`)
 
 `Brewfile.linux` is the Linux subset — formulae only, limited to what these dotfiles use; add
