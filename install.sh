@@ -149,6 +149,11 @@ P10K="$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
   curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh \
     | PROFILE=/dev/null bash \
   || warn "nvm install failed"
+# Claude Code: a cask on the Mac; on Linux its own installer, into
+# ~/.local/bin (on PATH via .zshrc). It updates itself from there.
+if [ "$OS" != Darwin ] && ! command -v claude >/dev/null && [ ! -x "$HOME/.local/bin/claude" ]; then
+  curl -fsSL https://claude.ai/install.sh | bash || warn "Claude Code install failed"
+fi
 
 step "Agent configs"
 
