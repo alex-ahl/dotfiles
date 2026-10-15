@@ -2,7 +2,8 @@
 # Ghostty + tmux workspace launcher.
 #
 # Opens one Ghostty window attached to a tmux session named after the current
-# workspace, with windows: shell, shell, dev, ai-1, ai-2. The ai-* windows
+# workspace (macOS; elsewhere attaches in the current terminal), with windows:
+# shell, shell, dev, ai-1, ai-2. The ai-* windows
 # auto-run the configured agent (see scripts/lib/agent.sh; default claude, one
 # per CLAUDE_CONFIG_DIR).
 #
@@ -66,6 +67,13 @@ if [ -n "${TMUX-}" ] && \
    [ "$(tmux display-message -p '#{socket_path}' 2>/dev/null)" = \
      "$(tmux -L "$SOCKET" display-message -p '#{socket_path}' 2>/dev/null)" ]; then
   exec tmux switch-client -t "$SESSION"
+fi
+
+# Off macOS there may be no GUI, so attach in this terminal. Unset TMUX: inside
+# another tmux server, attach otherwise refuses to nest.
+if [ "$(uname -s)" != Darwin ]; then
+  unset TMUX
+  exec tmux -L "$SOCKET" -f "$TMUX_CONF" attach -t "$SESSION"
 fi
 
 # Ghostty's --command word-splits on spaces and the resulting login/bash

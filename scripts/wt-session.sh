@@ -25,6 +25,7 @@ _slug_for() {  # $1 = window name -> prints its resume slug, or nothing
 }
 
 TMUX_BIN=/opt/homebrew/bin/tmux
+[ -x "$TMUX_BIN" ] || TMUX_BIN=tmux
 SOCK=wsg
 
 # No-op when there's no wsg server (e.g. running outside tmux).

@@ -122,7 +122,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias pfw=~/git/utils/env-port-forward.sh
 alias ns="pnpm start | jjq"
-alias jsontidy="pbpaste | jq '.' | pbcopy"
+[[ $OSTYPE == darwin* ]] && alias jsontidy="pbpaste | jq '.' | pbcopy"
 alias claude1='CLAUDE_CONFIG_DIR=~/.claude-account1 claude'
 alias claude2='CLAUDE_CONFIG_DIR=~/.claude-account2 claude'
 alias wsg=~/.scripts/workspace.sh
@@ -142,9 +142,9 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-[ -f "/Users/alex/.ghcup/env" ] && . "/Users/alex/.ghcup/env" # ghcup-envexport PATH="/opt/homebrew/opt/dotnet@8/bin:$PATH"
+[ -f "$HOME/.ghcup/env" ] && . "$HOME/.ghcup/env" # ghcup-env
 # The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/alex/.docker/completions $fpath)
+fpath=($HOME/.docker/completions $fpath)
 autoload -Uz compinit
 compinit
 # End of Docker CLI completions

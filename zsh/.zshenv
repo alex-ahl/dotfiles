@@ -1,9 +1,14 @@
 # Homebrew on PATH for ALL zsh invocations, including non-login non-interactive
 # `zsh -c` (tmux popups), which source only .zshenv, not .zprofile/.zshrc.
 # Guarded so login shells (which run brew shellenv in .zprofile) don't prepend twice.
-if [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
+# First prefix that exists: macOS, then Linuxbrew.
+for _brew in /opt/homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+  if [[ -x $_brew ]]; then
+    [[ ":$PATH:" == *":${_brew:h}:"* ]] || eval "$($_brew shellenv)"
+    break
+  fi
+done
+unset _brew
 
 # Pin the git settings that name a command to run, so a repo-local .git/config
 # cannot introduce one. GIT_CONFIG_COUNT overrides every config file, including
@@ -25,4 +30,4 @@ export GIT_CONFIG_KEY_3=core.pager       GIT_CONFIG_VALUE_3=cat
 function jjq {
     jq -R -r "${1:-.} as \$line | try fromjson catch \$line"
 }
-. "$HOME/.cargo/env"
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"

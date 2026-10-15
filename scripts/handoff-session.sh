@@ -26,7 +26,8 @@ _slugify() { printf '%s' "$1" | tr '/ ' '--' | tr -cd '[:alnum:]._-'; }
 _settled() {
   local f="$1" m now
   [ -s "$f" ] || return 1
-  m="$(stat -f %m "$f" 2>/dev/null || echo 0)"
+  # GNU first: GNU `stat -f` means filesystem status, not a format.
+  m="$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)"
   now="$(date +%s)"
   [ "$((now - m))" -ge 3 ]
 }

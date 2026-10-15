@@ -6,6 +6,7 @@
 # Must run inside a display-popup (-E) so fzf has a terminal.
 
 TMUX_BIN=/opt/homebrew/bin/tmux
+[ -x "$TMUX_BIN" ] || TMUX_BIN=tmux
 cur=$("$TMUX_BIN" display-message -p '#S')
 
 target=$("$TMUX_BIN" ls -F '#{?#{@workspace},#{@workspace},#{session_name}}|#{s|'"$HOME"'|~|:#{session_path}}|#{session_name}' \

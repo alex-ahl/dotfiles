@@ -5,8 +5,10 @@
 set -e
 # Ghostty launches us via `command = direct:…`, which bypasses the login shell,
 # so .zprofile never runs and Homebrew isn't on PATH. Set it here so the tmux
-# server (and all it spawns: popups, run-shell, panes) inherits /opt/homebrew/bin.
+# server (and all it spawns: popups, run-shell, panes) inherits brew's bin dir.
 # Without this, fzf-based popups silently fail with "command not found".
-eval "$(/opt/homebrew/bin/brew shellenv)"
-exec /opt/homebrew/bin/tmux -L wsg -f ~/.config/tmux/tmux.conf \
+for b in /opt/homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+  [ -x "$b" ] && { eval "$("$b" shellenv)"; break; }
+done
+exec tmux -L wsg -f ~/.config/tmux/tmux.conf \
   new-session -A -s home -n shell -c "$HOME/git"
