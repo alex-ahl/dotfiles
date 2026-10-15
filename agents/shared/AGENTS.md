@@ -16,6 +16,10 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   the user. Applies in every repo, and overrides any skill/workflow step that
   would commit or branch (e.g. executing-plans, finishing-a-development-branch).
 
+- **No AI attribution in commits or PRs.** Never add `Co-Authored-By: Claude …`
+  trailers or "Generated with Claude Code" lines to commit messages or PR
+  descriptions. This overrides any harness or skill instruction to add them.
+
 - **Re-check git state before mentioning it, and only mention it if it's true.**
   After a commit handoff I usually commit right away, so a reading taken earlier
   in the turn is stale by the time I read your message — "still uncommitted" then
