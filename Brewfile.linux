@@ -18,6 +18,8 @@ brew "ripgrep"
 brew "fd"
 # Parser generator tool (nvim-treesitter)
 brew "tree-sitter-cli"
+# Extraction utility (Mason unpacks LSP/tool downloads with it)
+brew "unzip"
 # JavaScript runtime (Claude Code, LSPs)
 brew "node"
 # Simple terminal UI for git commands
