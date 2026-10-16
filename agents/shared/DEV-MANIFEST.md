@@ -48,6 +48,12 @@ and a section per language invites filling it for symmetry's sake.
   isn't a comment. When an edit comes from a handoff or a plan, its "Why"
   section stays behind.
 
+- **Only what was asked.** No extra features, flags, fallbacks or abstractions
+  "while I'm here". Anything else worth doing gets mentioned, not done.
+
+- **A change removes what it makes obsolete.** Functions with no callers, unused
+  parameters, stale comments and docs go in the same change that made them dead.
+
 - **Names explain the code; text explains only what names can't.** Name a
   function for what it does, so it needs no doc comment to be understood. A
   comment that restates the name is a cue to rename instead. Keep text for the
