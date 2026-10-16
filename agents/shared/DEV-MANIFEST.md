@@ -39,8 +39,7 @@ and a section per language invites filling it for symmetry's sake.
   understandable; terseness never at the cost of comprehension. Don't restate
   self-explanatory code; comment for what the code can't say (a constraint, a
   gotcha, the *why*). **Exception:** shell / config scripts (dotfiles, setup
-  scripts) may carry explanatory comments, still terse. Match the comment density
-  of the surrounding file.
+  scripts) may carry explanatory comments, still terse.
 
 - **A comment explains why the code is *this way*, not why it exists.**
   Constraints, gotchas and rejected alternatives belong next to the code; the
@@ -48,6 +47,16 @@ and a section per language invites filling it for symmetry's sake.
   comment would be equally true of a completely different implementation, it
   isn't a comment. When an edit comes from a handoff or a plan, its "Why"
   section stays behind.
+
+- **Names explain the code; text explains only what names can't.** Name a
+  function for what it does, so it needs no doc comment to be understood. A
+  comment that restates the name is a cue to rename instead. Keep text for the
+  *why*: constraints, gotchas, rejected alternatives.
+
+- **Check new code against this manifest before presenting it.** For each new
+  function: does the name say what it does without its doc comment? Is every
+  comment something the code can't say? The surrounding code's style doesn't
+  override this file.
 
 - **One job per function.** A function that runs several steps in sequence
   becomes one function per step, and the caller reads as the pipeline. Split by
