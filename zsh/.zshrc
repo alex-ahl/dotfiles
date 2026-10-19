@@ -146,10 +146,13 @@ alias wtp=~/.scripts/wt-prune.sh
 # F12 in tmux passes every key to a nested tmux over ssh. Once that ssh ends,
 # take the keys back for this pane's session; otherwise they keep going to
 # this plain shell and no tmux binding works.
+# A dropped link also skips the remote tmux's teardown, leaving mouse, focus
+# and bracketed-paste reporting on, so clicks print as escape codes here.
 _tmux_ssh_preexec() { [[ $1 == ssh || $1 == "ssh "* ]] && _tmux_after_ssh=1 }
 _tmux_ssh_precmd() {
   (( ${_tmux_after_ssh:-0} )) || return
   _tmux_after_ssh=0
+  printf '\e[?1000l\e[?1002l\e[?1003l\e[?1006l\e[?1004l\e[?2004l'
   [[ -n $TMUX ]] && tmux set -t "$TMUX_PANE" -u prefix \; set -t "$TMUX_PANE" -u key-table \; refresh-client -S
 }
 preexec_functions+=(_tmux_ssh_preexec)
