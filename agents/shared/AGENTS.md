@@ -20,6 +20,13 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   trailers or "Generated with Claude Code" lines to commit messages or PR
   descriptions. This overrides any harness or skill instruction to add them.
 
+- **Outside sources stay out of the repo.** When I ask how another repo,
+  project, product, or company does something — to compare, for inspiration,
+  or just to learn — keep the source out of the project: no names, paths,
+  links, or "like X does" notes in files, commit messages, or PR descriptions.
+  Bring the idea over in the project's own terms. The source belongs in
+  conversation or in `~/handoffs/`.
+
 - **Re-check git state before mentioning it, and only mention it if it's true.**
   After a commit handoff I usually commit right away, so a reading taken earlier
   in the turn is stale by the time I read your message — "still uncommitted" then
