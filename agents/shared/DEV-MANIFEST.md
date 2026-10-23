@@ -68,6 +68,11 @@ and a section per language invites filling it for symmetry's sake.
   becomes one function per step, and the caller reads as the pipeline. Split by
   responsibility, not line count.
 
+- **Small files, split by responsibility.** When a file holds parts that can be
+  understood on their own, give each its own file — as long as following one idea
+  doesn't then mean jumping between files. Length alone is a prompt to look for a
+  split, not a reason for one.
+
 - **Shared rules get their own module.** When two parts must agree (training and
   inference, client and server), the shared code lives in a module both import.
   One command never imports another command's module.
