@@ -79,6 +79,17 @@ and a section per language invites filling it for symmetry's sake.
   steps with small functions so the top level reads as a sentence. A plain loop wins where
   order or side effects are the point, or where it simply reads clearer.
 
+- **Readable means checkable.** Before presenting a function, check it for:
+  - **Steps separated by blank lines**, so its shape shows before it's read.
+  - **A guard's `return` or `throw` on its own line**, never on the `if`'s line; in
+    braces where the formatter would otherwise pull it back up.
+  - **No line that has to be worked out** — nested callbacks, index arithmetic, a check
+    that relies on an earlier line having failed quietly. Rewrite it, or name it with a
+    small function.
+  - **Checks in the order a person asks them**, each next to what it guards.
+  - **The plainest tool that fits**: a string split over a search, a search over index
+    arithmetic.
+
 - **Shared rules get their own module.** When two parts must agree (training and
   inference, client and server), the shared code lives in a module both import.
   One command never imports another command's module.
