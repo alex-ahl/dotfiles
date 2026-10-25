@@ -73,6 +73,12 @@ and a section per language invites filling it for symmetry's sake.
   doesn't then mean jumping between files. Length alone is a prompt to look for a
   split, not a reason for one.
 
+- **Write for the human reader.** Prefer the version a person understands fastest. Usually
+  that's declarative: say what a result is (map, filter, flatMap, a single expression) rather
+  than how to build it step by step, and when a chain stops reading at a glance, name its
+  steps with small functions so the top level reads as a sentence. A plain loop wins where
+  order or side effects are the point, or where it simply reads clearer.
+
 - **Shared rules get their own module.** When two parts must agree (training and
   inference, client and server), the shared code lives in a module both import.
   One command never imports another command's module.
