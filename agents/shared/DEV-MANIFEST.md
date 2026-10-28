@@ -94,8 +94,11 @@ and a section per language invites filling it for symmetry's sake.
   inference, client and server), the shared code lives in a module both import.
   One command never imports another command's module.
 
-- **Shared mutable state goes in a class.** No long functions whose nested
-  closures share mutable state.
+- **State is data; changes are functions.** State lives in immutable values
+  (`readonly` types); a change is a function from the old value to the new one.
+  The one mutable reference sits at the edge, such as a server's current state,
+  not spread through closures or objects. Classes stay for what JavaScript makes
+  classes: errors, and wrappers around live resources like a child process.
 
 - **A refactor proves behaviour unchanged.** Run old and new on the same seeded
   input and compare the output, on top of the tests passing.
