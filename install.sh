@@ -217,6 +217,17 @@ if [ -d "$SHARE" ]; then
   done
 fi
 
+# Screenshots save as files into the share, where a sandboxed agent can read
+# them; prefix + i types the newest one's path into a pane.
+if [ -d "$SHARE" ]; then
+  mkdir -p "$SHARE/screenshots"
+  defaults write com.apple.screencapture location "$SHARE/screenshots"
+  defaults write com.apple.screencapture target file
+  # The floating thumbnail holds the file back until it fades, so prefix + i
+  # straight after a screenshot would pick the previous one.
+  defaults write com.apple.screencapture show-thumbnail -bool false
+fi
+
 # Publish what the sandbox reads. Its own script so a skill or shared-script edit
 # can be published without the brew + stow work above.
 "$PWD/scripts/deploy-runtime.sh"
