@@ -90,11 +90,18 @@ Name the whole boundary plan up front ("two commits: skills, then brain") so the
 many rounds are coming. The index holds one state, so commits are prepared strictly one at a
 time — stage commit 2 only after commit 1 has landed.
 
-Per commit, write the message to `~/brain/COMMIT_DRAFT`. An editor autocmd reads it into the
-commit buffer and deletes it, so the user commits in neogit (`c c`) with the message already
-there and nothing to copy. Deliberately outside the repo: agents are commonly barred from
-writing inside `.git`, and one shared file is enough because commits are prepared one at a
-time and the draft is consumed on first open.
+Per commit, write the message to `~/brain/commit-drafts/<key>`, creating the folder if it's
+missing. `<key>` is `git rev-parse --show-toplevel` run in the current worktree, with every `/`
+replaced by `-` (`/home/me/git/app/site` → `-home-me-git-app-site`). An editor autocmd computes the same key for
+the repo being committed in, reads that draft into the commit buffer and deletes it, so the user
+commits in neogit (`c c`) with the message already there and nothing to copy. Deliberately
+outside the repo: agents are commonly barred from writing inside `.git`. One draft per worktree,
+because sessions in other worktrees stage and draft at the same time — a single shared file
+let one session's message land in another's commit.
+
+Whenever a commit is staged and handed off, write its draft in the same turn — also outside
+this skill, such as "staged, suggested message: …". A message given only in chat leaves the
+editor with no draft, or with one left over from an earlier handoff.
 
 Write the file directly rather than through a shell heredoc or redirect — a direct file write
 is one reviewable operation, while a redirect is an arbitrary shell command and far more likely
@@ -103,7 +110,8 @@ to be gated.
 Then show:
 
 - the staged paths (`git diff --cached --stat`)
-- the drafted message, in the reply too — the draft file is consumed on first open
+- the drafted message, in the reply too — the draft file is consumed on first open. Not the
+  draft's path: the editor finds it, and the key is noise to the user
 - the verification result
 
 Wait for the user to commit before staging the next one.
@@ -120,3 +128,6 @@ Wait for the user to commit before staging the next one.
   it's in history, and rewriting shared history is worse than the leak.
 - **Never run `git commit` or `git push`** — the buffer is the user's to accept, edit, or
   discard, and the commit is theirs to make.
+- **Never say whether a branch is pushed from `git status -sb`** — it says nothing when the
+  branch has no upstream, and that silence reads as "not pushed". Compare against the remote
+  ref: `git rev-list --left-right --count <branch>...origin/<branch>`.
