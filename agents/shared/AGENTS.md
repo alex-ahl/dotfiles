@@ -22,10 +22,12 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
 
 - **Outside sources stay out of the repo.** Anything written into a tracked
   file, commit message, or PR description names no other repo, project,
-  product, or company, and no personal path or username — whether it came
-  from a comparison I asked for, a handoff, an incident, or another repo.
-  Bring the idea over in the project's own terms. The source belongs in
-  conversation or in `~/handoffs/`.
+  product, or company — whether it came from a comparison I asked for, a
+  handoff, an incident, or another repo. Bring the idea over in the project's
+  own terms. The source belongs in conversation or in `~/handoffs/`.
+  Personal paths and usernames go generic too — `~`, `$HOME`, `$USER` —
+  wherever that works the same; spell one out only where the file can't work
+  without it, such as a permission rule or an allowlist.
 
 - **Re-check git state before mentioning it, and only mention it if it's true.**
   After a commit handoff I usually commit right away, so a reading taken earlier
