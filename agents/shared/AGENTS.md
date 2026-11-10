@@ -25,6 +25,8 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   product, or company — whether it came from a comparison I asked for, a
   handoff, an incident, or another repo. Bring the idea over in the project's
   own terms. The source belongs in conversation or in `~/handoffs/`.
+  Linking a dependency's upstream issue or PR in a code comment, to track a
+  workaround's removal, is fine.
   Personal paths and usernames go generic too — `~`, `$HOME`, `$USER` —
   wherever that works the same; spell one out only where the file can't work
   without it, such as a permission rule or an allowlist.
