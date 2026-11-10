@@ -3,10 +3,17 @@
     "allowedDomains": [
       "*.githubusercontent.com",
       "api.anthropic.com",
+      "mcp-proxy.anthropic.com",
       "platform.claude.com",
       "claude.ai",
+      "*.claude.ai",
+      "frame.claudeusercontent.com",
+      "*.frame.claudeusercontent.com",
       "api.github.com",
+      "appicon.co",
+      "*.appicon.co",
       "apps.apple.com",
+      "cdn.playwright.dev",
       "files.pythonhosted.org",
       "github.com",
       "google.se",
@@ -14,8 +21,10 @@
       "*.hf.co",
       "huggingface.co",
       "*.huggingface.co",
+      "playwright.download.prss.microsoft.com",
       "pypi.org",
       "registry.npmjs.org",
+      "storage.googleapis.com",
       "www.google.se"
     ],
     "deniedDomains": [
@@ -24,7 +33,10 @@
     "deniedDomainReasons": {
       "*:22": "SSH is not available in the sandbox (no key, no known_hosts). Run git network operations on the host."
     },
-    "allowLocalBinding": true
+    "allowLocalBinding": true,
+    "allowUnixSockets": [
+      "/private/var/folders"
+    ]
   },
   "filesystem": {
     "allowRead": [
@@ -37,7 +49,8 @@
       "~",
       "/Users/Shared",
       "/private/tmp",
-      "/tmp"
+      "/tmp",
+      "/private/var/folders"
     ],
     "denyWrite": [
       "/Users/Shared/sv-alex/**/.zshenv",
