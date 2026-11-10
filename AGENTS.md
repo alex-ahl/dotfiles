@@ -17,9 +17,10 @@ the README before changing anything under `scripts/` or `agents/`.
 - **`scripts/shared/` is a boundary, not a folder.** Only what the sandbox calls
   lives there, and only that is deployed: `repo-resolve.sh` (repo-pointer skill),
   `repo-file-suggestion.sh` (`fileSuggestion` in `settings.json`), `gh-token.sh`
-  (the sandbox's `.zshenv`). A new script a skill invokes must go there. The rest
-  of `scripts/` is host-only tmux tooling. The relative path is deliberately the
-  same on both sides: `~/.scripts/shared/…`.
+  (the sandbox's `.zshenv`), `page-shot.sh` (page-screenshot skill). A new
+  script a skill invokes must go there. The rest of `scripts/` is host-only tmux
+  tooling. The relative path is deliberately the same on both sides:
+  `~/.scripts/shared/…`.
 
 - **The srt policy is deployed too.** It is not only an allowlist — its
   `filesystem.denyWrite` is what stops the sandbox writing `.git/config`,

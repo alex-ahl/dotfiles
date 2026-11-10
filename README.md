@@ -330,7 +330,7 @@ as **copies, never symlinks** — an agent write in the share must not reach any
 | deployed to | what | read by |
 | --- | --- | --- |
 | `/Users/Shared/$USER-policy/srt-settings.json` | the egress allowlist | srt, as `sandvault-$USER` |
-| `/Users/Shared/sv-$USER/agent-runtime/scripts/shared` | the three scripts the sandbox calls | `repo-pointer`, `fileSuggestion`, the gh router |
+| `/Users/Shared/sv-$USER/agent-runtime/scripts/shared` | the four scripts the sandbox calls | `repo-pointer`, `fileSuggestion`, the gh router, `page-screenshot` |
 | `/Users/Shared/sv-$USER/agent-runtime/agents` | skills, commands, `settings.json` | Claude, inside the sandbox |
 
 `scripts/shared/` is the boundary: only what the sandbox actually calls lives there, and only that is
