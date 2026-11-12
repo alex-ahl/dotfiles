@@ -20,7 +20,7 @@ Steps:
    - `git status --short`                (uncommitted state — never use `-uall`)
    - `git log -5 --oneline`              (recent commits)
 
-   Session id (for the `Source session:` line): take it from your own runtime context if you have it. Do NOT run `echo $CLAUDE_CODE_SESSION_ID` — that expansion forces a prompt. If you don't have the id, omit the `Source session:` line entirely.
+   Session id (for the `Source session:` line): take it from your own runtime context if you have it. Do NOT read it from an environment variable — that expansion forces a prompt. If you don't have the id, omit the `Source session:` line entirely.
 
    Also identify **related repos**: any other repos discussed in the conversation that hold part of this task (e.g. backend + frontend, k8s manifests + service code). Record their absolute paths. Single-repo tasks: leave the list empty.
 

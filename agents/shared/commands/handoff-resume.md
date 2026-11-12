@@ -31,9 +31,9 @@ Steps:
        ```
        This handoff covers: <primary-repo> + <related-repos>.
        You are in <pwd>.
-       cd into one of the listed repos to continue, or run `claude --resume <session-id>` from <primary-repo> for full transcript continuity.
+       cd into one of the listed repos to continue, or resume session <session-id> from <primary-repo> with your agent's own resume for full transcript continuity.
        ```
 
 Rules:
 - Do not modify code or run destructive commands as part of resuming. Resume = read state and confirm orientation.
-- If the handoff references a `Source session` id, mention the user can also try `claude --resume <id>` from the recorded repo path for full transcript continuity.
+- If the handoff references a `Source session` id, mention the user can also resume that session with their agent's own resume, from the recorded repo path, for full transcript continuity.
