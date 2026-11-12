@@ -58,8 +58,6 @@
       "Read(//Users/Shared/sv-alex/git/**/credentials*)"
     ],
     "additionalDirectories": [
-      "/Users/alex/handoffs",
-      "/Users/alex/brain",
       "/Users/Shared/sv-alex/handoffs",
       "/Users/Shared/sv-alex/brain"
     ]
