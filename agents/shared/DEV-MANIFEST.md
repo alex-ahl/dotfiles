@@ -4,9 +4,9 @@ Coding rules and opinions I want followed in any repo — my standards, not indu
 consensus. Read this file before writing, reviewing, or discussing code, and read
 it rather than working from memory of it: it changes as rules are added.
 
-Deployed like the global instructions — `agents/install.sh` links it into each
-agent config dir, so `~/.claude-account*/DEV-MANIFEST.md` resolves the same on the
-host and inside the sandbox.
+Deployed like the global instructions — `agents/install.sh` links it in as
+`~/.agents/DEV-MANIFEST.md`, which resolves the same on the host and inside the
+sandbox.
 
 ## How to apply
 

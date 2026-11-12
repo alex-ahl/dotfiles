@@ -27,9 +27,8 @@ sol/.config/sol/images_pasteboard/
 # home dir) that never match again. Anywhere in the tree, not just the package.
 **/settings.local.json
 
-# --- Claude Code skill sync state, written through the skills/ dir link ---
-agents/shared/skills/.trash/
-agents/shared/skills/synced/
+# --- Claude's skills dir: built links, plus Claude Code's skill sync state ---
+agents/build/
 
 # --- docker: only config.json + daemon.json are tracked ---
 docker/.docker/.token_seed

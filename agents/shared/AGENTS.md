@@ -1,8 +1,7 @@
 # Global agent instructions
 
 Applies to any AI coding agent (Claude Code, opencode, …) on this machine.
-Deployed into each agent's global-instructions location by `agents/install.sh`
-(for Claude, symlinked as `~/.claude-account*/CLAUDE.md`).
+Deployed into each agent's global-instructions location by `agents/install.sh`.
 
 - **Ask before editing this file.** Never write to this file (or the deployed
   `CLAUDE.md`) as a side effect of another task. Propose the exact wording and
@@ -56,18 +55,17 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   for the relaunch (`prefix + R`) rather than reading the same 403 as a new
   failure.
 
-- **Dotfiles live outside the sandbox.** `~/.scripts/*` and the skills and
-  commands under `~/.claude-account*/` are deployed copies; the source is a
-  host-only repo. When you are sandboxed you cannot see it, and both editing an
+- **Dotfiles live outside the sandbox.** `~/.scripts/*` and everything under
+  `~/.agents/` are deployed copies; the source is a host-only repo. When you
+  are sandboxed you cannot see it, and both editing an
   existing copy and adding a new one appear to work — the deployed tree is
   writable — but the next `scripts/deploy-runtime.sh` rebuilds it from the repo
   and your change is gone. Neither leaves a trace.
   If a change is needed there, don't patch the copy — write the proposed content
   to `~/handoffs/<slug>.md` (shared, the host account reads it) and hand me a
-  paste-ready instruction naming the source path. Deployed → source:
-  `~/.claude-account*/skills|commands/…` →
-  `agents/shared/…`, `CLAUDE.md` → `agents/shared/AGENTS.md`,
-  `~/.scripts/shared/…` → `scripts/shared/…`. Have it end with
+  paste-ready instruction naming the source path. Deployed → source: resolve
+  the deployed path (`realpath`); what follows `agent-runtime/` is its path in
+  this repo. Have it end with
   `scripts/deploy-runtime.sh` from the repo root — `agents/install.sh` only
   relinks the host account and leaves this copy stale, and `./install.sh` does
   the deploy but restows the whole home on the way past.
@@ -93,7 +91,7 @@ Deployed into each agent's global-instructions location by `agents/install.sh`
   setting, and new value. This holds even when the change is the obvious way to
   make the task work.
 
-- **Read `~/.claude-account*/DEV-MANIFEST.md` before writing, reviewing, or
+- **Read `~/.agents/DEV-MANIFEST.md` before writing, reviewing, or
   discussing code.** My coding rules live there, not here. Read the file rather
   than recalling it, and follow its own scoping rules.
 

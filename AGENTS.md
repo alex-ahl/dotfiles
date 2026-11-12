@@ -44,7 +44,8 @@ the README before changing anything under `scripts/` or `agents/`.
 | --- | --- | --- |
 | `scripts/shared/` | both | yes, deployed |
 | `scripts/`, `scripts/lib/`, `scripts/agents.d/` | host, via tmux bindings | no |
-| `agents/` | Claude, both accounts | yes, deployed |
+| `agents/shared/` | any agent, via `~/.agents` | yes, deployed |
+| `agents/claude/`, `agents/claude-skills/` | Claude, both accounts | yes, deployed |
 | `scripts/lib/srt-settings.json` | srt | source only — deployed to `$USER-policy` |
 | `zsh/`, `tmux/`, `git/`, `ssh/`, `nvim/`, … | host | no, stowed into `$HOME` |
 

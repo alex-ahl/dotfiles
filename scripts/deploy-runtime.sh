@@ -14,6 +14,9 @@ set -Eeuo pipefail
 # parent of $0's dir is $HOME rather than the repo.
 cd "$(dirname "$0")" && cd "$(pwd -P)/.."
 
+# Claude's skills dir, on the host and, through the copy below, in the sandbox.
+agents/build-claude-skills.sh
+
 # srt reads the allowlist as sandvault-$USER, so it cannot live in this repo.
 # Kept outside $SHARE, where `sv -r`'s ACL walk never reaches it; /Users/Shared
 # is sticky, so only this account can replace the dir. Deployed before the share

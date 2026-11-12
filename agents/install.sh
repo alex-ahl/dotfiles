@@ -1,22 +1,20 @@
 #!/usr/bin/env bash
-# Link shared agent commands + skills into each agent's config dirs.
+# Link the shared agent files to ~/.agents, and wire each agent's config dirs.
 # Single agent (claude, two accounts) for now; a second would add target dirs to
 # the loop (or later be driven by scripts/agents.d/). Idempotent; run by install.sh.
 set -euo pipefail
 cd "$(dirname "$0")"                 # agents/
-REPO="$(cd .. && pwd)"
 
-COMMANDS="$PWD/shared/commands"      # version-controlled command sources
-SKILLS="$PWD/shared/skills"          # version-controlled skill sources
-GLOBAL="$PWD/shared/AGENTS.md"      # global agent instructions
-MANIFEST="$PWD/shared/DEV-MANIFEST.md"  # coding rules, read before code work
+SHARED="$PWD/shared"                 # agent-neutral instructions, commands, skills
+COMMANDS="$SHARED/commands"
+GLOBAL="$SHARED/AGENTS.md"           # global agent instructions
+CLAUDE_SKILLS="$PWD/build/claude-skills"  # built by build-claude-skills.sh
 
-# Link a shared dir into an account. Whole-dir, not entry by entry: a link farm
-# only picks up a *new* skill when it is rebuilt, and the sandbox's farm is
-# rebuilt by sandvault-sync.sh rather than install.sh — so adding a skill
-# silently needed a different command than editing one. A dir symlink makes both
-# just a deploy. It also retires the stale-link prune this used to need: with the
-# dir as the source, a deleted skill is simply gone.
+# Link a dir whole, not entry by entry: a link farm made here only picks up a
+# *new* skill when this script reruns, and the sandbox's copy reruns via
+# sandvault-sync.sh — so adding a skill silently needed a different command than
+# editing one. Claude's skills farm is built by the deploy instead, and linked
+# here whole like the rest.
 link_dir() {
   local src="$1" dst="$2"
   # ln -sfn nests inside an existing real dir instead of replacing it, so the
@@ -31,16 +29,17 @@ link_dir() {
   ln -sfn "$src" "$dst"
 }
 
+# The path the shared text uses, for every agent. It resolves the same inside
+# the sandbox, where this script runs against the deployed copy.
+link_dir "$SHARED" "$HOME/.agents"
+
 for acct in "$HOME/.claude-account1" "$HOME/.claude-account2"; do
   mkdir -p "$acct"
   # Claude reads global instructions from CLAUDE.md at the config-dir level.
   # (A future opencode agent would get GLOBAL symlinked as its own AGENTS.md.)
   ln -sfn "$GLOBAL" "$acct/CLAUDE.md"
-  # Linked per file, like CLAUDE.md: the path has to resolve identically inside
-  # the sandbox, where only what is deployed and linked is reachable.
-  ln -sfn "$MANIFEST" "$acct/DEV-MANIFEST.md"
-  link_dir "$COMMANDS" "$acct/commands"
-  link_dir "$SKILLS"   "$acct/skills"
+  link_dir "$COMMANDS"      "$acct/commands"
+  link_dir "$CLAUDE_SKILLS" "$acct/skills"
 done
 
 # Plain ~/.claude — used by any agent started without CLAUDE_CONFIG_DIR — gets
@@ -49,6 +48,5 @@ done
 # repo.
 mkdir -p "$HOME/.claude"
 ln -sfn "$GLOBAL" "$HOME/.claude/CLAUDE.md"
-ln -sfn "$MANIFEST" "$HOME/.claude/DEV-MANIFEST.md"
 
-echo "linked global instructions + commands + skills into ~/.claude-account{1,2}, instructions into ~/.claude"
+echo "linked ~/.agents; instructions + commands + skills into ~/.claude-account{1,2}, instructions into ~/.claude"

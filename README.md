@@ -20,9 +20,12 @@ Each top-level dir is a stow "package" mirroring `$HOME`; `install.sh` symlinks 
 place. Two exceptions: `scripts/` is symlinked whole to `~/.scripts`, and `agents/` is a
 container of per-agent packages (claude, and later opencode, …) stowed with
 `stow -d agents` so e.g. `agents/claude/.claude-account1/` maps to `~/.claude-account1/`.
-Agent-neutral slash-command sources live in `agents/shared/commands/` and the skills in
-`agents/shared/skills/`; both are symlinked into each agent's config dirs by
-`agents/install.sh` (run from `install.sh`) — one source, shared across accounts/agents.
+Agent-neutral instructions, slash commands and skills live in `agents/shared/`, symlinked to
+`~/.agents` by `agents/install.sh` (run from `install.sh`) — one source, shared across
+accounts/agents. Claude-only skills live in `agents/claude-skills/`. Claude reads a single skills
+dir, `agents/build/claude-skills/` (gitignored), which `agents/build-claude-skills.sh` builds from
+both, and which also holds Claude Code's claude.ai skill sync. Adding or removing a skill takes
+`scripts/deploy-runtime.sh`, which runs that build.
 
 ## Install (new machine)
 
@@ -124,7 +127,7 @@ its list before agreeing.
 | `karabiner`| `~/.config/karabiner/karabiner.json` (macOS only)           |
 | `worktrunk`| `~/.config/worktrunk/config.toml`                           |
 | `sol`      | `~/.config/sol/config.json` (macOS only)                    |
-| `agents/claude` | `settings.json` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`), plus `.claude/agents/`. `commands/`, `skills/` and `CLAUDE.md` are symlinked by `agents/install.sh`, not stowed. Plain `~/.claude` gets `CLAUDE.md` only — `sv` installs its own skill under `~/.claude/skills`, and a dir symlink there would hide it and send sv's next write into this repo |
+| `agents/claude` | `settings.json` for `~/.claude`, `~/.claude-account1`, `~/.claude-account2` (stowed via `stow -d agents claude`), plus `.claude/agents/`. `commands/`, `skills/` (→ `agents/build/claude-skills/`) and `CLAUDE.md` are symlinked by `agents/install.sh`, not stowed. Plain `~/.claude` gets `CLAUDE.md` only — `sv` installs its own skill under `~/.claude/skills`, and a dir symlink there would hide it and send sv's next write into this repo |
 | `nvim`     | `~/.config/nvim` (git submodule → `alex-ahl/nvim`)          |
 | `scripts`  | `~/.scripts` (symlinked dir, on PATH-style use)             |
 
@@ -133,9 +136,9 @@ its list before agreeing.
 On the host, a symlink to this repo's `scripts/`. Inside the sandbox, a symlink to the deployed
 copy — see "Where this repo lives".
 
-`deploy-runtime.sh` — publish the srt policy and the `agent-runtime` copy to the share, without
-the brew + stow half of `install.sh`. Run it after editing a skill, a command, `AGENTS.md`, or
-anything in `scripts/shared/`; then `prefix + R` for a policy change to reach a running pane.
+`deploy-runtime.sh` — build Claude's skills dir, then publish the srt policy and the
+`agent-runtime` copy to the share, without the brew + stow half of `install.sh`. Run it after
+editing a skill, a command, `AGENTS.md`, or anything in `scripts/shared/`; then `prefix + R` for a policy change to reach a running pane.
 
 `clone-bare.sh`, `check-worktrees.sh`, and the ghostty/tmux workspace helpers
 (`start-tmux.sh`, `workspace.sh`, `wt-session.sh`, `kill-session.sh`, `git-status.sh`).
