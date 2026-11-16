@@ -73,6 +73,13 @@ and a section per language invites filling it for symmetry's sake.
   doesn't then mean jumping between files. Length alone is a prompt to look for a
   split, not a reason for one.
 
+- **Organise code so a human can find their way.** Split folders along whatever the
+  project's readers think in — features, screens, domains, or layers — pick one per level
+  and keep to it, so a reader can guess where a file lives before searching. The folder name
+  replaces file-name prefixes (`checkout/form.ts`, not `checkout-form.ts`). Keep a folder
+  small enough to take in at a glance; when it grows past about a dozen files, split it
+  again. Code shared across the split gets one folder of its own.
+
 - **Write for the human reader.** Prefer the version a person understands fastest. Usually
   that's declarative: say what a result is (map, filter, flatMap, a single expression) rather
   than how to build it step by step, and when a chain stops reading at a glance, name its
