@@ -8,6 +8,7 @@
 	email = 7934262+alex-ahl@users.noreply.github.com
 [merge]
 	ff = only
+	conflictStyle = zdiff3
 [pull]
 	rebase = true
 [include]
