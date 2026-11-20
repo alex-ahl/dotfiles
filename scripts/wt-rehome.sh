@@ -3,7 +3,8 @@
 #
 # Start a fresh worktree + wsg tmux session from the current one, carrying
 # in-progress work along. Run from inside the worktree to move on from.
-# Behaviour depends on whether the current branch's PR is merged:
+# Behaviour depends on whether the current branch is merged (its PR, or else its
+# commits already on the default branch):
 #
 #   MERGED      → new worktree off the latest default branch; changes MOVE to it;
 #                 old worktree + session torn down.
@@ -46,17 +47,23 @@ done
 [ -z "$DEFAULT" ] && { echo "could not determine default branch (origin/HEAD)" >&2; exit 1; }
 [ "$OLD_BRANCH" = "$DEFAULT" ] && { echo "refusing to rehome the default-branch ('$DEFAULT') worktree" >&2; exit 1; }
 
-# --- Is the current branch's PR merged? ---------------------------------------
-# Accurate for squash-merges, unlike a local origin/<default>..HEAD check.
-# No PR / no gh / non-GitHub repo => can't verify => treated as "not merged".
+# --- Is the current branch merged? --------------------------------------------
+# The PR state first: accurate for squash-merges, unlike a local ancestry check.
 MERGED=0
 if command -v gh >/dev/null 2>&1; then
   [ "$(gh pr view "$OLD_BRANCH" --json state --jq .state 2>/dev/null || true)" = "MERGED" ] && MERGED=1
 fi
 
+# No merged PR (repos merged without one): merged if HEAD is already on the
+# default branch. Misses squash merges; the PR check above covers those.
+if [ "$MERGED" = 0 ] && git fetch origin "$DEFAULT" --quiet 2>/dev/null \
+   && git merge-base --is-ancestor HEAD "origin/$DEFAULT"; then
+  MERGED=1
+fi
+
 if [ "$MERGED" = 0 ]; then
   # Not merged → non-destructive fork off current HEAD; old worktree + session kept.
-  echo "no merged PR for '$OLD_BRANCH' — forking '$NEW' off the current HEAD; old worktree/session kept."
+  echo "'$OLD_BRANCH' isn't merged — forking '$NEW' off the current HEAD; old worktree/session kept."
 fi
 
 # Detect work to carry now, but stash only after each path's abort-able
