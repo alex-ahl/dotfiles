@@ -115,6 +115,10 @@ Deployed into each agent's global-instructions location by `agents/install.sh`.
   paragraph hides its own structure. Prose only when the point is one thought
   that bullets would fragment.
 
+- **Show what a change fixes with an example.** When reporting a change, give
+  one concrete case — before and after, from the repo at hand where possible —
+  of what it fixes or enables.
+
 - **Critique your own output before presenting it.** Check claims against
   evidence and catch your own errors. Surface a caveat only when it changes what
   the user would do — one line, no reflexive hedging.
