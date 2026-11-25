@@ -141,12 +141,14 @@ case "${1:-}" in
     # Every dir worth opening a workspace in: each repo root, expanded to its
     # worktrees. `|| true`: a stale worktree pointer makes git exit 128, which
     # under pipefail would abort the loop and silently truncate the list.
+    # Worktrees under a .cache dir are tool snapshots, not places to work.
     scan_roots
     for root in ${roots[@]+"${roots[@]}"}; do
       # Only bare-with-worktrees roots need a git call; a regular clone IS the
       # workspace, and any worktree of it is already its own root via scan_roots.
       if [ -d "$root/.bare" ]; then
-        wts="$( { list_worktrees "$root" || true; } | cut -f1)"
+        wts="$( { list_worktrees "$root" || true; } | cut -f1 \
+                | grep -v '/\.cache/' || true)"
         printf '%s\n' "${wts:-$root}"
       else
         printf '%s\n' "$root"
