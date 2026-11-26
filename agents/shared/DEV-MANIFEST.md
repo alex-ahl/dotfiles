@@ -64,6 +64,12 @@ and a section per language invites filling it for symmetry's sake.
   comment something the code can't say? The surrounding code's style doesn't
   override this file.
 
+- **Simplify before calling a feature done.** Once it works and the checks
+  pass, reread the whole change for complexity it doesn't need: state kept
+  twice, a branch a simpler shape removes, a helper used once, a loop that
+  reads awkwardly. Remove it, or name what you kept and why, and say what you
+  simplified when you report the feature.
+
 - **One job per function.** A function that runs several steps in sequence
   becomes one function per step, and the caller reads as the pipeline. Split by
   responsibility, not line count.
