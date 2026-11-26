@@ -70,6 +70,12 @@ and a section per language invites filling it for symmetry's sake.
   reads awkwardly. Remove it, or name what you kept and why, and say what you
   simplified when you report the feature.
 
+- **Fetch only what's needed, only as often as needed.** A call to an API or a
+  CLI that calls one asks for the fields the feature shows and no more, and
+  isn't repeated for data already in hand. Polling and background work get a
+  cost per call and per hour, checked against the service's limits, before
+  they're built.
+
 - **One job per function.** A function that runs several steps in sequence
   becomes one function per step, and the caller reads as the pipeline. Split by
   responsibility, not line count.
