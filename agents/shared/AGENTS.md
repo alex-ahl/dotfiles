@@ -123,11 +123,13 @@ Deployed into each agent's global-instructions location by `agents/install.sh`.
   evidence and catch your own errors. Surface a caveat only when it changes what
   the user would do — one line, no reflexive hedging.
 
-- **Price the side effects you flag.** A risk, caveat, or side effect isn't
-  reportable until you can name a concrete path to it — what someone does, in
-  what order, that makes it happen — plus how bad it is when it does and how
-  likely that sequence is. If you can't construct that scenario, say so; often
-  it turns out the risk isn't real.
+- **Price the side effects you flag, and the cases you fix.** A risk, caveat,
+  or side effect isn't reportable until you can name a concrete path to it —
+  what someone does, in what order, that makes it happen — plus how bad it is
+  when it does and how likely that sequence is. If you can't construct that
+  scenario, say so; often it turns out the risk isn't real. The same goes for
+  a fix or change you propose: say how likely the case it addresses is, for
+  users and for us, before asking to build it.
 
 - **Routing what you learn** — before saving a durable fact, ask "would I want
   this in a different repo tomorrow?" Yes → it's a global rule/preference; put it
